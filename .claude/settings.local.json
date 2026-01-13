@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(requirements)",
+      "Skill(requirements:*)",
+      "Skill(design)",
+      "Skill(design:*)",
+      "Skill(tasks)",
+      "Skill(tasks:*)",
+      "Bash(wsl --version)",
+      "Bash(wsl --list --verbose:*)",
+      "Bash(systeminfo:*)",
+      "Bash(findstr:*)",
+      "Bash(wsl:*)",
+      "Bash(timeout /t 2 /nobreak)",
+      "Bash(gh auth:*)",
+      "Bash(gh repo create:*)",
+      "Bash(git rm:*)"
+    ]
+  }
+}
