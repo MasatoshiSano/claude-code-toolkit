@@ -128,6 +128,83 @@ The `.tmp/` directory serves as a workspace for spec-driven development document
 - スクリーンリーダー対応
 - レスポンシブデザインとテキストサイズ変更対応
 
+### Design System: Serendie
+
+**このプロジェクトでは、三菱電機のオープンソースデザインシステム「Serendie Design System」を採用します。**
+
+#### 概要
+Serendie Design Systemは、汎用性と普遍性を重視した、React環境向けのUIコンポーネントライブラリとデザイントークンシステムです。
+
+#### インストール
+
+```bash
+# デザイントークン
+npm install @serendie/design-token
+
+# UIコンポーネント（React）
+npm install @serendie/ui
+```
+
+#### 主要な特徴
+
+**1. デザイントークン**
+- W3C Design Token Format Moduleに準拠
+- リファレンストークンとシステムトークンの2層構造
+- CSS変数として利用可能
+
+```css
+@import "@serendie/design-token/tokens.css";
+
+h1 {
+  font-size: var(--sd-reference-typography-scale-expanded-large);
+  color: var(--sd-system-color-impression-primary);
+}
+```
+
+**2. テーマシステム**
+5つのカラーテーマを提供（日本の伝統色ベース）：
+- `konjo` (紺青)
+- `asagi` (浅葱)
+- `sumire` (菫)
+- `tsutsuji` (躑躅)
+- `kurikawa` (栗皮)
+
+テーマ切り替え：
+```html
+<html data-panda-theme="asagi"></html>
+```
+
+**3. アイコン**
+- Serendie Symbols: 300+のSVGアイコン
+- OutlinedとFilledの2スタイル
+
+**4. スタイリング**
+- Panda CSSを採用
+- ユーティリティファーストのアプローチ
+
+**5. Figma連携**
+- Code Connect対応
+- デザインファイルから直接コードスニペットを確認可能
+- デザインとコードの一貫性を保証
+
+#### アクセシビリティ対応
+- 十分なコントラスト比を確保したアクセシブルなカラーテーマ
+- ブランドとプラットフォームに適した書体
+- 判読可能なタイプスケール
+- キーボードナビゲーション対応コンポーネント
+
+#### リソース
+- 公式サイト: https://serendie.design/
+- GitHub: https://github.com/serendie
+- Storybook: https://storybook.serendie.design/
+
+#### 実装ガイドライン
+1. **コンポーネント選択**: Serendie UIのコンポーネントを優先的に使用
+2. **デザイントークン使用**: カスタムスタイル定義時はSerendieのデザイントークンを参照
+3. **テーマ対応**: すべてのUIは5つのテーマすべてで適切に表示されること
+4. **Figma連携**: デザインとコードの整合性を常に確認
+5. **アクセシビリティ**: Serendieのアクセシビリティガイドラインに従う
+
 ### Spec-Driven Development
 Documents in Japanese follow a structured format:
 - Requirements: Functional/non-functional requirements, constraints, success criteria, risks
