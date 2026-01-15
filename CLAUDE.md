@@ -34,6 +34,14 @@ Core workflow for structured feature development:
 
 **Usage Pattern**: Run `/spec` to execute the full workflow with user approval at each stage, or run individual stages sequentially.
 
+### Document Synchronization
+Commands to keep specification documents consistent when changes are made outside the `/spec` workflow:
+- `/sync-design` - Sync design.md based on changes to requirements.md
+- `/sync-tasks` - Sync tasks.md based on changes to design.md
+- `/sync-all` - Sync all documents (requirements → design → tasks)
+
+**Usage Pattern**: Use these commands when you make manual edits to specification documents or add features without running `/spec`.
+
 ### Development Workflow
 - `/commit` - Analyze changes and create conventional commits with appropriate emojis
 - `/create-pr` - Automated PR creation with generated title, description, and test plan
@@ -107,6 +115,65 @@ The `.tmp/` directory serves as a workspace for spec-driven development document
 2. Address findings
 3. Run `/security-audit` for security-specific review
 4. Use `/clean` to auto-fix formatting and linting issues
+
+### Document Synchronization Workflow
+When making changes outside the `/spec` workflow:
+
+**Scenario 1: Requirements changed**
+1. Edit `.tmp/requirements.md` manually or use `/requirements` with new feature
+2. Run `/sync-all` to propagate changes through design and tasks
+3. Review updated documents
+4. Begin implementation
+
+**Scenario 2: Design changed**
+1. Edit `.tmp/design.md` or update with `/design`
+2. Run `/sync-tasks` to update task list
+3. Review new tasks
+4. Begin implementation
+
+**Scenario 3: Incremental feature addition**
+1. Use `/requirements "new feature"` - automatically merges with existing requirements
+2. Use `/design` - automatically merges with existing design
+3. Use `/tasks` - automatically adds to "進行中の機能" section
+4. Begin implementation
+
+## Best Practices for Document Management
+
+### When to use `/spec` vs individual commands
+
+**Use `/spec` for:**
+- Major new features requiring full planning
+- Initial project setup
+- Complex features affecting multiple components
+- Features requiring architectural changes
+
+**Use individual commands + sync for:**
+- Small feature additions
+- Bug fixes requiring documentation
+- Incremental improvements
+- Quick iterations
+
+### Document Consistency Rules
+
+1. **Always keep documents synchronized**
+   - After editing requirements.md → run `/sync-design` then `/sync-tasks` (or use `/sync-all`)
+   - After editing design.md → run `/sync-tasks`
+   - Never let documents drift out of sync
+
+2. **Track document versions**
+   - All documents have "改訂履歴" section
+   - Always add entry with date and description of changes
+   - Use改訂履歴 to understand document evolution
+
+3. **Task lifecycle management**
+   - New tasks go to "🚧 進行中の機能" section
+   - Completed tasks move to "✅ 完了した機能" section
+   - Keep task history for reference
+
+4. **Component naming consistency**
+   - Use same component names across all documents
+   - Update component references when renaming
+   - Maintain dependency relationships
 
 ## Key Conventions
 
