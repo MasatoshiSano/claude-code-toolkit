@@ -6,6 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Claude Code toolkit containing custom skills/commands that extend Claude Code's capabilities for software development workflows. Commands are defined as markdown files in `.claude/commands/` and can be invoked using `/command-name` syntax.
 
+## Language & Communication
+
+**重要**: このリポジトリで作業する際は、すべての応答を日本語で行ってください。ドキュメント、コミットメッセージ、コードコメント、およびユーザーとのコミュニケーションは日本語で記述します。
+
 ## Repository Structure
 
 ```
@@ -105,6 +109,24 @@ The `.tmp/` directory serves as a workspace for spec-driven development document
 4. Use `/clean` to auto-fix formatting and linting issues
 
 ## Key Conventions
+
+### Accessibility Requirements
+
+**すべてのアプリケーションはWCAG 2.2（Web Content Accessibility Guidelines 2.2）に準拠する必要があります。**
+
+実装時の考慮事項：
+- **知覚可能**: コンテンツはすべてのユーザーが知覚できる形で提示
+- **操作可能**: UIコンポーネントとナビゲーションは操作可能
+- **理解可能**: 情報とUIの操作は理解可能
+- **堅牢性**: コンテンツは支援技術を含む様々なユーザーエージェントで解釈可能
+
+主要な要件：
+- 適切なセマンティックHTML（見出し、ランドマーク、ARIAラベル）
+- キーボードナビゲーション対応
+- 十分な色コントラスト比（AA準拠: 4.5:1以上）
+- フォーカス表示の明確化
+- スクリーンリーダー対応
+- レスポンシブデザインとテキストサイズ変更対応
 
 ### Spec-Driven Development
 Documents in Japanese follow a structured format:
