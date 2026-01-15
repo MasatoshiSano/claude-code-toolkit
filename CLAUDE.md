@@ -135,6 +135,24 @@ The `.tmp/` directory serves as a workspace for spec-driven development document
 #### 概要
 Serendie Design Systemは、汎用性と普遍性を重視した、React環境向けのUIコンポーネントライブラリとデザイントークンシステムです。
 
+#### 技術要件
+
+**React: 常に最新の安定版を使用してください。**
+
+- 新規プロジェクト: 最新の安定版Reactを採用
+- 既存プロジェクト: 定期的に最新版へアップデート
+- React 19以降の新機能を積極的に活用（React Compiler、Server Components、Actions等）
+- 非推奨機能（Legacy APIs）は使用禁止
+
+依存関係の更新確認：
+```bash
+# 最新版の確認
+npm outdated react react-dom
+
+# アップデート
+npm install react@latest react-dom@latest
+```
+
 #### インストール
 
 ```bash
