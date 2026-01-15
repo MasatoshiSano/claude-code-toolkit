@@ -34,13 +34,10 @@ Core workflow for structured feature development:
 
 **Usage Pattern**: Run `/spec` to execute the full workflow with user approval at each stage, or run individual stages sequentially.
 
-### Document Synchronization
-Commands to keep specification documents consistent when changes are made outside the `/spec` workflow:
-- `/sync-design` - Sync design.md based on changes to requirements.md
-- `/sync-tasks` - Sync tasks.md based on changes to design.md
-- `/sync-all` - Sync all documents (requirements → design → tasks)
-
-**Usage Pattern**: Use these commands when you make manual edits to specification documents or add features without running `/spec`.
+**Important**: All commands automatically merge with existing documents:
+- `/requirements` merges new features into existing requirements.md
+- `/design` updates existing design.md with new components
+- `/tasks` adds new tasks to "進行中の機能" section
 
 ### Development Workflow
 - `/commit` - Analyze changes and create conventional commits with appropriate emojis
@@ -116,25 +113,19 @@ The `.tmp/` directory serves as a workspace for spec-driven development document
 3. Run `/security-audit` for security-specific review
 4. Use `/clean` to auto-fix formatting and linting issues
 
-### Document Synchronization Workflow
-When making changes outside the `/spec` workflow:
+### Incremental Development Workflow
+For adding features without running full `/spec`:
 
-**Scenario 1: Requirements changed**
-1. Edit `.tmp/requirements.md` manually or use `/requirements` with new feature
-2. Run `/sync-all` to propagate changes through design and tasks
-3. Review updated documents
+**Quick feature addition:**
+1. `/requirements "new feature"` - automatically merges with existing requirements
+2. `/design` - reads requirements.md and merges with existing design
+3. `/tasks` - reads design.md and adds to "進行中の機能" section
 4. Begin implementation
 
-**Scenario 2: Design changed**
-1. Edit `.tmp/design.md` or update with `/design`
-2. Run `/sync-tasks` to update task list
-3. Review new tasks
-4. Begin implementation
-
-**Scenario 3: Incremental feature addition**
-1. Use `/requirements "new feature"` - automatically merges with existing requirements
-2. Use `/design` - automatically merges with existing design
-3. Use `/tasks` - automatically adds to "進行中の機能" section
+**After manual document edits:**
+1. Edit `.tmp/requirements.md` manually
+2. Run `/design` to update design based on new requirements
+3. Run `/tasks` to generate tasks based on updated design
 4. Begin implementation
 
 ## Best Practices for Document Management
@@ -147,7 +138,7 @@ When making changes outside the `/spec` workflow:
 - Complex features affecting multiple components
 - Features requiring architectural changes
 
-**Use individual commands + sync for:**
+**Use individual commands for:**
 - Small feature additions
 - Bug fixes requiring documentation
 - Incremental improvements
@@ -156,9 +147,9 @@ When making changes outside the `/spec` workflow:
 ### Document Consistency Rules
 
 1. **Always keep documents synchronized**
-   - After editing requirements.md → run `/sync-design` then `/sync-tasks` (or use `/sync-all`)
-   - After editing design.md → run `/sync-tasks`
-   - Never let documents drift out of sync
+   - After editing requirements.md → run `/design` then `/tasks`
+   - After editing design.md → run `/tasks`
+   - Commands automatically merge with existing content
 
 2. **Track document versions**
    - All documents have "改訂履歴" section
