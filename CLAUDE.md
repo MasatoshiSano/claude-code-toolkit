@@ -40,7 +40,7 @@ Core workflow for structured feature development:
 - `/tasks` adds new tasks to "進行中の機能" section
 
 ### Development Workflow
-- `/commit` - Analyze changes and create conventional commits with appropriate emojis
+- `/commit` - Analyze changes and create conventional commits with appropriate emojis（コミット後、技術ブログ記事作成を自動提案）
 - `/create-pr` - Automated PR creation with generated title, description, and test plan
 - `/create-feature [name]` - Full feature implementation from design to testing to documentation
 - `/bugfix [description]` - Fix bugs based on description
@@ -55,7 +55,7 @@ Core workflow for structured feature development:
 
 ### Documentation
 - `/docs [target] [format]` - Generate comprehensive documentation (API, code, user guides, developer docs)
-- `/blog` - Create blog posts or articles
+- `/blog` - 前回コミットからの変更を技術ブログ記事のドラフトに変換（複数記事対応、初心者向け）
 - `/create-prd` - Generate product requirements documents
 - `/add-to-changelog` - Automatically update changelog
 
@@ -105,7 +105,31 @@ The `.tmp/` directory serves as a workspace for spec-driven development document
 ### Quick Commit & PR
 1. Make your code changes
 2. Run `/commit` to automatically stage and commit with conventional commit format
-3. Run `/create-pr` to create a pull request with auto-generated description
+3. If blog-worthy content detected, respond to blog creation prompt
+4. Run `/create-pr` to create a pull request with auto-generated description
+
+### Technical Blog Creation
+コミット後、技術ブログ記事を作成：
+
+**自動提案ワークフロー:**
+1. `/commit` でコミット
+2. 技術ブログ候補が自動検出される
+3. 記事作成を選択（y/N）
+4. テーマごとに対話
+5. 複数のドラフト記事が`_docs/blog/`に生成される
+
+**手動実行:**
+1. `/blog` を実行
+2. 前回コミットからの変更を分析
+3. 記事候補を提示
+4. 対話して記事作成
+
+**特徴:**
+- 技術を細分化して初心者にもわかりやすく
+- 1記事1テーマ
+- 複数記事対応
+- Before/After、数値で効果を示す
+- すぐに編集・公開できるドラフト品質
 
 ### Code Quality Check
 1. Run `/check` for comprehensive analysis
