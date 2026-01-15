@@ -1,0 +1,128 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Repository Overview
+
+This is a Claude Code toolkit containing custom skills/commands that extend Claude Code's capabilities for software development workflows. Commands are defined as markdown files in `.claude/commands/` and can be invoked using `/command-name` syntax.
+
+## Repository Structure
+
+```
+.claude/
+├── commands/           # Custom skill definitions (markdown files)
+└── settings.local.json # Permission configuration for skills
+
+.tmp/                   # Temporary workspace for spec-driven development
+├── requirements.md     # Generated requirements documents
+├── design.md          # Generated design documents
+└── tasks.md           # Generated task breakdowns
+```
+
+## Command Categories
+
+### Spec-Driven Development Workflow
+Core workflow for structured feature development:
+- `/spec` - Complete 3-stage workflow (requirements → design → tasks)
+- `/requirements` - Stage 1: Create requirements specification in `.tmp/requirements.md`
+- `/design` - Stage 2: Create detailed design based on requirements in `.tmp/design.md`
+- `/tasks` - Stage 3: Break down design into implementable tasks in `.tmp/tasks.md`
+
+**Usage Pattern**: Run `/spec` to execute the full workflow with user approval at each stage, or run individual stages sequentially.
+
+### Development Workflow
+- `/commit` - Analyze changes and create conventional commits with appropriate emojis
+- `/create-pr` - Automated PR creation with generated title, description, and test plan
+- `/create-feature [name]` - Full feature implementation from design to testing to documentation
+- `/bugfix [description]` - Fix bugs based on description
+- `/fix-issue [number]` - Automatically resolve GitHub issues by analyzing and implementing solutions
+
+### Code Quality & Security
+- `/check` - Comprehensive quality, security, and performance analysis
+- `/clean` - Code formatting, linting, and auto-fix
+- `/optimize [target]` - Performance analysis and optimization (algorithm, memory, network, frontend, database)
+- `/security-audit [scope]` - Security vulnerability scanning and compliance checking
+- `/dependency-audit` - Dependency security and license compliance analysis
+
+### Documentation
+- `/docs [target] [format]` - Generate comprehensive documentation (API, code, user guides, developer docs)
+- `/blog` - Create blog posts or articles
+- `/create-prd` - Generate product requirements documents
+- `/add-to-changelog` - Automatically update changelog
+
+### Project Management
+- `/todo` - Project task management
+- `/milestone-tracker` - Track project milestones
+- `/business-scenario` - Business scenario modeling
+- `/decision-tree` - Decision optimization
+- `/deploy-prep` - Standardize deployment preparation
+
+### Specialized Tools
+- `/marp` - Simplify markdown and convert to PDF with Marp
+- `/qiita-commit` - Add all changes, create Qiita article, and commit
+
+## Architecture
+
+### Skill Definition Format
+Skills are defined as markdown files with YAML frontmatter:
+```markdown
+---
+allowed-tools: TodoWrite, Read, Write, Bash(command:*)
+description: Brief description of what the skill does
+---
+
+## Context
+- Input parameters via $ARGUMENTS
+
+## Your task
+Detailed instructions for executing the skill
+```
+
+### Permission System
+`.claude/settings.local.json` defines allowed operations for specific skills using permission patterns like `Skill(name)` and `Bash(command:*)`.
+
+### Temporary Workspace
+The `.tmp/` directory serves as a workspace for spec-driven development documents. These files are created progressively through the requirements → design → tasks workflow and are referenced across stages using `@.tmp/filename.md` syntax.
+
+## Common Workflows
+
+### Creating a New Feature
+1. Use `/spec "feature description"` to generate requirements, design, and tasks
+2. Review and approve each stage when prompted
+3. Implement following the generated `.tmp/tasks.md`
+4. Use `/commit` to commit changes with proper formatting
+5. Use `/create-pr` to create pull request
+
+### Quick Commit & PR
+1. Make your code changes
+2. Run `/commit` to automatically stage and commit with conventional commit format
+3. Run `/create-pr` to create a pull request with auto-generated description
+
+### Code Quality Check
+1. Run `/check` for comprehensive analysis
+2. Address findings
+3. Run `/security-audit` for security-specific review
+4. Use `/clean` to auto-fix formatting and linting issues
+
+## Key Conventions
+
+### Spec-Driven Development
+Documents in Japanese follow a structured format:
+- Requirements: Functional/non-functional requirements, constraints, success criteria, risks
+- Design: Architecture, components, data flow, API interfaces, error handling, security
+- Tasks: Phased implementation plan with dependencies, completion criteria, time estimates
+
+### Commit Messages
+Commands use Conventional Commits format with emojis:
+- `feat: description ✨` - New features
+- `fix: description 🐛` - Bug fixes
+- `docs: description 📝` - Documentation
+- `refactor: description ♻️` - Refactoring
+- `test: description ✅` - Tests
+- `chore: description 🔧` - Maintenance
+
+### Branch Naming
+- Features: `feature/` or `feat/`
+- Fixes: `fix/` or `bugfix/`
+- Hotfixes: `hotfix/`
+- Refactoring: `refactor/`
