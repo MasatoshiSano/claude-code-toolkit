@@ -1,0 +1,49 @@
+{
+  "environment": "staging",
+  "region": "ap-northeast-1",
+  "account": "STAGING_ACCOUNT_ID",
+  "vpc": {
+    "cidr": "10.1.0.0/16",
+    "availabilityZones": 2,
+    "natGateways": 1
+  },
+  "compute": {
+    "instanceType": "t3.small",
+    "desiredCount": 2,
+    "autoScaling": {
+      "enabled": true,
+      "min": 2,
+      "max": 5,
+      "targetCPU": 70
+    }
+  },
+  "database": {
+    "engine": "postgres",
+    "version": "14",
+    "instanceClass": "db.t3.small",
+    "allocatedStorage": 50,
+    "multiAZ": false,
+    "backupRetention": 3,
+    "deletionProtection": false
+  },
+  "monitoring": {
+    "enableContainerInsights": true,
+    "logRetention": 7,
+    "alarms": {
+      "cpuThreshold": 80,
+      "memoryThreshold": 85,
+      "errorRateThreshold": 2
+    }
+  },
+  "deployment": {
+    "strategy": "rolling",
+    "healthCheckGracePeriod": 60,
+    "rollbackOnFailure": true
+  },
+  "tags": {
+    "Environment": "staging",
+    "ManagedBy": "CDK",
+    "CostCenter": "engineering",
+    "Project": "web-app"
+  }
+}

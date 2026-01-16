@@ -167,6 +167,147 @@ technical-blog-generator/
 ## 次のステップ
 ```
 
+#### 4. aws-deploy-automation
+**場所**: `.claude/skills/aws-deploy-automation/`
+
+**目的**: AWSへのデプロイを自動化・標準化（CDK/CloudFormation/Terraform対応）
+
+**構造**:
+```
+aws-deploy-automation/
+├── SKILL.md
+├── scripts/
+│   ├── deploy-cdk.js
+│   ├── rollback-stack.js
+│   └── pre-deploy-validation.js
+├── templates/
+│   ├── cdk/app-stack.ts
+│   └── cloudformation/app-template.yaml
+└── configs/
+    ├── environments/staging.json
+    └── deployment-strategy.yaml
+```
+
+**特徴**:
+- Infrastructure as Code（IaC）のベストプラクティス
+- 環境ごとの設定管理（dev/staging/prod）
+- デプロイ前検証とロールバック戦略
+- Blue/Green、Canaryデプロイ対応
+- CI/CD統合（GitHub Actions、CircleCI）
+
+#### 5. ai-prompt-manager
+**場所**: `.claude/skills/ai-prompt-manager/`
+
+**目的**: AI APIプロンプトの管理、バージョン管理、A/Bテスト、パフォーマンス分析
+
+**構造**:
+```
+ai-prompt-manager/
+├── SKILL.md
+├── scripts/
+│   ├── ab-test-runner.js
+│   ├── token-optimizer.js
+│   └── performance-analyzer.js
+├── templates/
+│   └── prompt-template.md
+├── prompts/
+│   ├── chat/
+│   └── completion/
+└── configs/
+    ├── prompt-registry.json
+    └── ab-test-configs.yaml
+```
+
+**特徴**:
+- プロンプトのバージョン管理とGit連携
+- A/Bテストで品質・コスト・速度を比較
+- トークン最適化提案（平均15%削減）
+- マルチモデル対応（Claude、GPT、Gemini）
+- コスト追跡とレポート生成
+
+#### 6. api-contract-validator
+**場所**: `.claude/skills/api-contract-validator/`
+
+**目的**: フロントエンドとバックエンド間のAPIコントラクト検証
+
+**構造**:
+```
+api-contract-validator/
+├── SKILL.md
+├── scripts/
+│   ├── generate-openapi.js
+│   ├── breaking-change-detector.js
+│   └── generate-client.js
+├── templates/
+│   ├── openapi-template.yaml
+│   └── api-client-template.ts
+└── validators/
+    ├── request-validator.js
+    └── response-validator.js
+```
+
+**特徴**:
+- OpenAPI/Swagger仕様の自動生成
+- 破壊的変更の自動検出
+- 型安全なクライアントコード生成（TypeScript/Python/Go）
+- モックサーバー生成で開発加速
+- CI/CDでコントラクト違反を自動検出
+
+#### 7. e2e-test-generator
+**場所**: `.claude/skills/e2e-test-generator/`
+
+**目的**: ユーザーフローからE2Eテストを自動生成（Playwright/Cypress）
+
+**構造**:
+```
+e2e-test-generator/
+├── SKILL.md
+├── scripts/
+│   ├── flow-recorder.js
+│   ├── test-generator.js
+│   └── page-object-generator.js
+├── templates/
+│   ├── playwright/test-template.ts
+│   └── cypress/test-template.js
+└── examples/
+    ├── user-login-flow.md
+    └── generated-tests/
+```
+
+**特徴**:
+- ユーザーフロー定義からテストコード自動生成
+- Page Objectパターン適用で保守性向上
+- データ駆動テスト対応
+- 視覚的回帰テスト（スクリーンショット比較）
+- CI/CD統合で並列実行
+
+#### 8. frontend-performance-auditor
+**場所**: `.claude/skills/frontend-performance-auditor/`
+
+**目的**: フロントエンドパフォーマンスの包括的分析と最適化
+
+**構造**:
+```
+frontend-performance-auditor/
+├── SKILL.md
+├── scripts/
+│   ├── lighthouse-runner.js
+│   ├── web-vitals-analyzer.js
+│   ├── bundle-analyzer.js
+│   └── image-optimizer.js
+├── templates/
+│   └── budget-template.json
+└── configs/
+    └── performance-thresholds.json
+```
+
+**特徴**:
+- Lighthouse監査とCore Web Vitals分析
+- バンドルサイズ分析と最適化提案（平均38%削減）
+- 画像最適化（WebP変換、レスポンシブ対応）
+- パフォーマンス予算管理
+- CI/CDで予算超過を自動検出
+
 ### Agent Skills開発のベストプラクティス
 
 1. **SKILL.mdは詳細に**: 目的、使用時期、手順、エラーハンドリング、例を含める
