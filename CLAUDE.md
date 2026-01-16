@@ -305,6 +305,26 @@ h1 {
 4. **Figma連携**: デザインとコードの整合性を常に確認
 5. **アクセシビリティ**: Serendieのアクセシビリティガイドラインに従う
 
+#### 詳細ガイドライン
+
+**重要: UI作成時の必須事項**
+
+UIやデザインに関する作業を行う際は、**必ず最初に** `.claude/commands/serendie-design.md` **を読んでから実装してください。**
+
+- **Webで検索しない**: Serendie Design Systemの情報はWebで調べるのではなく、必ずこのローカルファイルを参照すること
+- **ファイルの参照が最優先**: すべてのUI/デザイン作業の前に、このファイルを読んで最新のガイドラインを確認すること
+- **実装指示の遵守**: ファイル内の「Claude に対する指示（Skill としての挙動）」セクションに従って実装すること
+
+このファイルには以下の内容が含まれています：
+- ブランドアイデンティティ
+- デザインシステムアーキテクチャ
+- カラーパレット、タイポグラフィ、レイアウトの詳細
+- UIコンポーネントの使用方法
+- アイコンとアニメーション
+- Figma連携のワークフロー
+- コード実装の原則とベストプラクティス
+- Claude Code用の具体的な実装指示
+
 ### Spec-Driven Development
 Documents in Japanese follow a structured format:
 - Requirements: Functional/non-functional requirements, constraints, success criteria, risks
