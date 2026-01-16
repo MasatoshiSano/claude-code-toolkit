@@ -308,6 +308,100 @@ frontend-performance-auditor/
 - パフォーマンス予算管理
 - CI/CDで予算超過を自動検出
 
+#### 9. aws-cost-optimizer
+**場所**: `.claude/skills/aws-cost-optimizer/`
+
+**目的**: AWSコストを分析し、最適化の提案と自動化を行う
+
+**構造**:
+```
+aws-cost-optimizer/
+├── SKILL.md
+├── scripts/
+│   ├── cost-analyzer.js
+│   ├── unused-resource-detector.js
+│   ├── rightsizing-analyzer.js
+│   └── ri-savings-calculator.js
+├── templates/
+│   └── cost-report-template.md
+└── configs/
+    ├── cost-thresholds.json
+    └── optimization-rules.yaml
+```
+
+**特徴**:
+- AWS Cost ExplorerでコストをService/Tag/環境別に分析
+- 未使用リソースの自動検出（EC2、EBS、EIP、RDS等）
+- EC2/RDSの適正サイズ分析（CPU/メモリ使用率ベース）
+- Reserved Instance/Savings Plans提案（平均30-40%削減）
+- 予算アラート設定とコスト異常検出
+- タグベースのコスト配分レポート
+
+#### 10. database-manager
+**場所**: `.claude/skills/database-manager/`
+
+**目的**: データベースのスキーマ管理、マイグレーション、最適化を自動化
+
+**構造**:
+```
+database-manager/
+├── SKILL.md
+├── scripts/
+│   ├── migration-generator.js
+│   ├── rollback-manager.js
+│   ├── data-validator.js
+│   ├── backup-automation.js
+│   ├── index-optimizer.js
+│   └── query-analyzer.js
+├── templates/
+│   ├── prisma/migration-template.sql
+│   ├── typeorm/migration-template.ts
+│   └── sequelize/migration-template.js
+└── configs/
+    ├── database-config.json
+    └── optimization-rules.json
+```
+
+**特徴**:
+- Prisma/TypeORM/Sequelizeマイグレーション生成
+- 安全なロールバック戦略とバックアップ自動化
+- データ整合性検証（外部キー、NULL制約、重複チェック）
+- インデックス最適化（未使用index削除、必要indexの提案）
+- スロークエリ分析とパフォーマンス改善提案
+- S3/Azureへの自動バックアップ
+
+#### 11. serverless-optimizer
+**場所**: `.claude/skills/serverless-optimizer/`
+
+**目的**: サーバーレスアーキテクチャ（Lambda、API Gateway、DynamoDB等）を最適化
+
+**構造**:
+```
+serverless-optimizer/
+├── SKILL.md
+├── scripts/
+│   ├── lambda-optimizer.js
+│   ├── coldstart-analyzer.js
+│   ├── apigateway-optimizer.js
+│   ├── dynamodb-optimizer.js
+│   └── cost-calculator.js
+├── templates/
+│   ├── lambda/optimized-config.json
+│   ├── apigateway/caching-config.json
+│   └── dynamodb/capacity-config.yaml
+└── configs/
+    ├── optimization-rules.yaml
+    └── performance-thresholds.json
+```
+
+**特徴**:
+- Lambda関数のメモリ/タイムアウト最適化（平均50%コスト削減）
+- コールドスタート削減（Provisioned Concurrency、Lambda Layers）
+- API Gatewayキャッシング設定とスロットリング
+- DynamoDB適正キャパシティ分析（Provisioned vs On-Demand）
+- Step Functions最適化（並列実行、Express Workflows）
+- 包括的コスト分析とROI計算
+
 ### Agent Skills開発のベストプラクティス
 
 1. **SKILL.mdは詳細に**: 目的、使用時期、手順、エラーハンドリング、例を含める
