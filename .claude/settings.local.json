@@ -7,6 +7,12 @@
       "Skill(design:*)",
       "Skill(tasks)",
       "Skill(tasks:*)",
+      "AgentSkill(spec-driven-development)",
+      "AgentSkill(spec-driven-development:*)",
+      "AgentSkill(code-quality-suite)",
+      "AgentSkill(code-quality-suite:*)",
+      "AgentSkill(technical-blog-generator)",
+      "AgentSkill(technical-blog-generator:*)",
       "Bash(wsl --version)",
       "Bash(wsl --list --verbose:*)",
       "Bash(systeminfo:*)",
@@ -15,7 +21,13 @@
       "Bash(timeout /t 2 /nobreak)",
       "Bash(gh auth:*)",
       "Bash(gh repo create:*)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(git diff:*)",
+      "Bash(git show:*)",
+      "Bash(git log:*)",
+      "Bash(npm audit:*)",
+      "Bash(eslint:*)",
+      "Bash(tsc:*)"
     ]
   }
 }

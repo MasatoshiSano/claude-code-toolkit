@@ -15,6 +15,10 @@ This is a Claude Code toolkit containing custom skills/commands that extend Clau
 ```
 .claude/
 ├── commands/           # Custom skill definitions (markdown files)
+├── skills/             # Agent Skills (advanced, structured skills)
+│   ├── spec-driven-development/
+│   ├── code-quality-suite/
+│   └── technical-blog-generator/
 └── settings.local.json # Permission configuration for skills
 
 .tmp/                   # Temporary workspace for spec-driven development
@@ -22,6 +26,169 @@ This is a Claude Code toolkit containing custom skills/commands that extend Clau
 ├── design.md          # Generated design documents
 └── tasks.md           # Generated task breakdowns
 ```
+
+## Agent Skills（上級スキル）
+
+**Agent Skills**は、Anthropicの2025年12月発表のオープン標準に準拠した、より高度で構造化されたスキルです。
+通常のスキル（`.claude/commands/`）と比較して、以下の特徴があります：
+
+### 通常のSkills vs Agent Skills
+
+| 特性 | 通常のSkills | Agent Skills |
+|------|-------------|--------------|
+| 定義方法 | Markdownファイル | フォルダ構造（SKILL.md + scripts + templates） |
+| 複雑さ | プロンプトベース | スクリプト、リソース、テスト統合 |
+| 再利用性 | Claude Code専用 | クロスプラットフォーム対応 |
+| バージョン管理 | 基本的 | 詳細（version, tags, dependencies） |
+| テスト | 限定的 | testsディレクトリで体系的にテスト可能 |
+
+### 利用可能なAgent Skills
+
+#### 1. spec-driven-development
+**場所**: `.claude/skills/spec-driven-development/`
+
+**目的**: 要件定義→詳細設計→タスク分解の3段階ワークフローを統合
+
+**構造**:
+```
+spec-driven-development/
+├── SKILL.md                    # スキル定義
+├── templates/
+│   ├── requirements-template.md
+│   ├── design-template.md
+│   └── tasks-template.md
+└── examples/
+    └── usage-example.md
+```
+
+**使用方法**:
+```bash
+# 通常のスキル（従来）
+/spec "新機能の説明"
+/requirements "新機能の説明"
+/design
+/tasks
+
+# Agent Skill版（将来）
+agent spec-driven-development "新機能の説明"
+```
+
+**特徴**:
+- テンプレートベースの一貫した文書生成
+- 既存ドキュメントとのマージ機能
+- 改訂履歴の自動管理
+- 段階的な承認フロー
+
+#### 2. code-quality-suite
+**場所**: `.claude/skills/code-quality-suite/`
+
+**目的**: コード品質、セキュリティ、パフォーマンスの包括的分析（`/check`と`/security-audit`を統合）
+
+**構造**:
+```
+code-quality-suite/
+├── SKILL.md
+├── scripts/
+│   ├── quality-checker.js
+│   ├── security-scanner.py
+│   ├── performance-analyzer.js
+│   └── report-generator.js
+├── configs/
+│   ├── eslint-rules.json
+│   ├── security-rules.yaml
+│   ├── performance-thresholds.json
+│   └── owasp-checklist.md
+└── reports/
+    └── [timestamp]/
+```
+
+**分析項目**:
+- **コード品質**: 構文エラー、複雑度、重複コード、ベストプラクティス
+- **セキュリティ**: OWASP Top 10、脆弱性スキャン、シークレット検出、依存関係監査
+- **パフォーマンス**: アルゴリズム効率、メモリ管理、バンドルサイズ
+- **テストカバレッジ**: Line/Branch/Function coverage
+- **アクセシビリティ**: WCAG 2.2準拠チェック
+
+**出力**:
+```markdown
+# Code Quality Suite Report
+
+Overall Score: 81/100 (Good)
+
+| Category      | Score | Issues |
+|---------------|-------|--------|
+| Code Quality  | 85    | 26     |
+| Security      | 72    | 12     |
+| Performance   | 78    | 8      |
+```
+
+#### 3. technical-blog-generator
+**場所**: `.claude/skills/technical-blog-generator/`
+
+**目的**: コミットから技術ブログ記事を自動生成（`/blog`の拡張版）
+
+**構造**:
+```
+technical-blog-generator/
+├── SKILL.md
+├── scripts/
+│   ├── analyze-commit.js
+│   ├── detect-blog-topics.js
+│   ├── subdivide-topics.js
+│   ├── generate-article.js
+│   └── interactive-qa.js
+├── templates/
+│   ├── beginner-article.md
+│   ├── intermediate-article.md
+│   └── advanced-article.md
+└── examples/
+    └── sample-articles/
+```
+
+**特徴**:
+- **自動テーマ検出**: コミット変更から記事候補を自動抽出
+- **初心者向け細分化**: 1記事1テーマで技術を分解
+- **対話型生成**: テーマごとにQ&Aで詳細を収集
+- **複数記事対応**: 1コミットから複数の記事を生成
+- **数値重視**: Before/After、改善率を必ず含める
+
+**記事構成**:
+```markdown
+# [タイトル] - 初心者でもわかる実装ガイド
+
+## TL;DR
+## はじめに
+## 問題：なぜこの実装が必要だったのか
+## 解決策：[技術名]とは？
+## 実装：ステップバイステップで解説
+## 結果：どれくらい改善されたか
+## 注意点とベストプラクティス
+## まとめ
+## 次のステップ
+```
+
+### Agent Skills開発のベストプラクティス
+
+1. **SKILL.mdは詳細に**: 目的、使用時期、手順、エラーハンドリング、例を含める
+2. **テンプレート活用**: 一貫性のある出力のためのテンプレートを用意
+3. **スクリプト分離**: 複雑なロジックはスクリプトファイルに分離
+4. **例を豊富に**: Good/Bad examplesで使い方を明示
+5. **バージョン管理**: YAML frontmatterでバージョン、依存関係を管理
+
+### 通常のSkillsとの使い分け
+
+**通常のSkills（`.claude/commands/`）を使う場合:**
+- 単純なプロンプトテンプレート
+- Claude Code専用
+- 外部スクリプト不要
+- 素早いプロトタイピング
+
+**Agent Skills（`.claude/skills/`）を使う場合:**
+- 複雑なロジックやスクリプトが必要
+- 複数のツール/ライブラリを統合
+- 他のプラットフォームでも使用予定
+- チームで共有・再利用
+- バージョン管理・テストが重要
 
 ## Command Categories
 
