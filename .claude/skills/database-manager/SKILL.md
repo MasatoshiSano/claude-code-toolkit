@@ -19,6 +19,33 @@ requires:
 
 # Database Manager Agent Skill
 
+## 実装状況
+
+**ステータス**: ✅ Phase 1完了
+**実装日**: 2026-01-17
+**動作保証**: 基本機能（Prisma/TypeORMのみ対応）
+**実装済み機能**:
+- ✅ マイグレーション生成（migration-generator.js）
+- ✅ スキーマ分析（schema-analyzer.js）
+- ✅ インデックス最適化（index-optimizer.js）
+- ✅ クエリ分析（query-analyzer.js）
+- ✅ Prismaマイグレーションテンプレート（templates/prisma/migration-template.sql）
+- ✅ TypeORMマイグレーションテンプレート（templates/typeorm/migration-template.ts）
+- ✅ データベース設定（configs/database-config.json）
+- ✅ 最適化ルール（configs/optimization-rules.json）
+
+**未実装機能**（Phase 2以降で実装予定）:
+- 🚧 ロールバック管理（rollback-manager.js）
+- 🚧 データ整合性検証（data-validator.js）
+- 🚧 バックアップ自動化（backup-automation.js）
+- 🚧 ヘルスチェック（health-checker.js）
+- 🚧 Sequelize対応
+
+**動作要件**:
+- Node.js >= 16
+- Prisma または TypeORM（プロジェクトに応じて）
+- データベース接続情報（PostgreSQL/MySQL等）
+
 ## Purpose
 
 このスキルは、データベースのスキーマ管理、マイグレーション、最適化を自動化します。

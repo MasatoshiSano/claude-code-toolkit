@@ -19,6 +19,30 @@ requires:
 
 # Serverless Optimizer Agent Skill
 
+## 実装状況
+
+**ステータス**: ✅ Phase 1完了
+**実装日**: 2026-01-17
+**動作保証**: 基本機能
+**実装済み機能**:
+- ✅ Lambda最適化（lambda-optimizer.js）
+- ✅ コールドスタート分析（coldstart-analyzer.js）
+- ✅ コスト計算（cost-calculator.js）
+- ✅ Lambda設定テンプレート（templates/lambda/optimized-config.json）
+- ✅ 最適化ルール（configs/optimization-rules.yaml）
+- ✅ パフォーマンス閾値（configs/performance-thresholds.json）
+
+**未実装機能**（Phase 2以降で実装予定）:
+- 🚧 API Gateway最適化（apigateway-optimizer.js）
+- 🚧 DynamoDB最適化（dynamodb-optimizer.js）
+- 🚧 Step Functions最適化（stepfunctions-optimizer.js）
+- 🚧 パフォーマンス監視（performance-monitor.js）
+
+**動作要件**:
+- AWS CLI設定済み（`aws configure`）
+- IAM権限: `lambda:List*`, `lambda:Get*`, `cloudwatch:GetMetricStatistics`
+- Node.js依存パッケージ: `npm install @aws-sdk/client-lambda @aws-sdk/client-cloudwatch @aws-sdk/client-cloudwatch-logs`
+
 ## Purpose
 
 このスキルは、サーバーレスアーキテクチャ（AWS Lambda、API Gateway、Step Functions、DynamoDB等）を最適化します。

@@ -16,9 +16,17 @@ This is a Claude Code toolkit containing custom skills/commands that extend Clau
 .claude/
 ├── commands/           # Custom skill definitions (markdown files)
 ├── skills/             # Agent Skills (advanced, structured skills)
-│   ├── spec-driven-development/
-│   ├── code-quality-suite/
-│   └── technical-blog-generator/
+│   ├── spec-driven-development/        ✅ 実装済み
+│   ├── code-quality-suite/             ✅ 実装済み
+│   ├── technical-blog-generator/       ✅ 実装済み
+│   ├── aws-cost-optimizer/             ✅ Phase 1完了
+│   ├── serverless-optimizer/           ✅ Phase 1完了
+│   ├── database-manager/               ✅ Phase 1完了
+│   ├── aws-deploy-automation/          🚧 計画中
+│   ├── ai-prompt-manager/              🚧 計画中
+│   ├── api-contract-validator/         🚧 計画中
+│   ├── e2e-test-generator/             🚧 計画中
+│   └── frontend-performance-auditor/   🚧 計画中
 └── settings.local.json # Permission configuration for skills
 
 .tmp/                   # Temporary workspace for spec-driven development
@@ -44,7 +52,10 @@ This is a Claude Code toolkit containing custom skills/commands that extend Clau
 
 ### 利用可能なAgent Skills
 
-#### 1. spec-driven-development
+#### ✅ 実装済み・使用可能
+
+##### 1. spec-driven-development
+**実装状況**: ✅ 実装済み | **動作保証**: 基本機能
 **場所**: `.claude/skills/spec-driven-development/`
 
 **目的**: 要件定義→詳細設計→タスク分解の3段階ワークフローを統合
@@ -79,7 +90,8 @@ agent spec-driven-development "新機能の説明"
 - 改訂履歴の自動管理
 - 段階的な承認フロー
 
-#### 2. code-quality-suite
+##### 2. code-quality-suite
+**実装状況**: ✅ 実装済み | **動作保証**: 基本機能（`/check`コマンドと統合）
 **場所**: `.claude/skills/code-quality-suite/`
 
 **目的**: コード品質、セキュリティ、パフォーマンスの包括的分析（`/check`と`/security-audit`を統合）
@@ -122,7 +134,8 @@ Overall Score: 81/100 (Good)
 | Performance   | 78    | 8      |
 ```
 
-#### 3. technical-blog-generator
+##### 3. technical-blog-generator
+**実装状況**: ✅ 実装済み | **動作保証**: 基本機能（`/blog`コマンドと統合）
 **場所**: `.claude/skills/technical-blog-generator/`
 
 **目的**: コミットから技術ブログ記事を自動生成（`/blog`の拡張版）
@@ -167,7 +180,103 @@ technical-blog-generator/
 ## 次のステップ
 ```
 
-#### 4. aws-deploy-automation
+#### ✅ Phase 1実装完了（2026-01-17）
+
+##### 4. aws-cost-optimizer
+**実装状況**: ✅ Phase 1完了 | **実装日**: 2026-01-17 | **動作保証**: 基本機能
+**場所**: `.claude/skills/aws-cost-optimizer/`
+
+**目的**: AWSコストを分析し、最適化の提案と自動化を行う
+
+**構造**:
+```
+aws-cost-optimizer/
+├── SKILL.md
+├── scripts/
+│   ├── cost-analyzer.js
+│   ├── unused-resource-detector.js
+│   └── report-generator.js
+├── templates/
+│   └── cost-report-template.md
+└── configs/
+    ├── cost-thresholds.json
+    └── optimization-rules.yaml
+```
+
+**特徴**:
+- AWS Cost ExplorerでコストをService/Tag/環境別に分析
+- 未使用リソースの自動検出（EC2、EBS、EIP、RDS等）
+- EC2/RDSの適正サイズ分析（CPU/メモリ使用率ベース）
+- Reserved Instance/Savings Plans提案（平均30-40%削減）
+- 予算アラート設定とコスト異常検出
+- タグベースのコスト配分レポート
+
+##### 5. serverless-optimizer
+**実装状況**: ✅ Phase 1完了 | **実装日**: 2026-01-17 | **動作保証**: 基本機能
+**場所**: `.claude/skills/serverless-optimizer/`
+
+**目的**: サーバーレスアーキテクチャ（Lambda、API Gateway、DynamoDB等）を最適化
+
+**構造**:
+```
+serverless-optimizer/
+├── SKILL.md
+├── scripts/
+│   ├── lambda-optimizer.js
+│   ├── coldstart-analyzer.js
+│   └── cost-calculator.js
+├── templates/
+│   ├── lambda/optimized-config.json
+│   ├── apigateway/caching-config.json
+│   └── dynamodb/capacity-config.yaml
+└── configs/
+    ├── optimization-rules.yaml
+    └── performance-thresholds.json
+```
+
+**特徴**:
+- Lambda関数のメモリ/タイムアウト最適化（平均50%コスト削減）
+- コールドスタート削減（Provisioned Concurrency、Lambda Layers）
+- API Gatewayキャッシング設定とスロットリング
+- DynamoDB適正キャパシティ分析（Provisioned vs On-Demand）
+- Step Functions最適化（並列実行、Express Workflows）
+- 包括的コスト分析とROI計算
+
+##### 6. database-manager
+**実装状況**: ✅ Phase 1完了 | **実装日**: 2026-01-17 | **動作保証**: 基本機能（Prisma/TypeORMのみ対応）
+**場所**: `.claude/skills/database-manager/`
+
+**目的**: データベースのスキーマ管理、マイグレーション、最適化を自動化
+
+**構造**:
+```
+database-manager/
+├── SKILL.md
+├── scripts/
+│   ├── migration-generator.js
+│   ├── schema-analyzer.js
+│   ├── index-optimizer.js
+│   └── query-analyzer.js
+├── templates/
+│   ├── prisma/migration-template.sql
+│   └── typeorm/migration-template.ts
+└── configs/
+    ├── database-config.json
+    └── optimization-rules.json
+```
+
+**特徴**:
+- Prisma/TypeORMマイグレーション生成（Sequelizeは将来対応予定）
+- 安全なロールバック戦略とバックアップ自動化
+- データ整合性検証（外部キー、NULL制約、重複チェック）
+- インデックス最適化（未使用index削除、必要indexの提案）
+- スロークエリ分析とパフォーマンス改善提案
+- S3/Azureへの自動バックアップ
+
+#### 🚧 計画中（Phase 2以降）
+
+##### 7. aws-deploy-automation
+**実装状況**: 🚧 計画中 | **予定Phase**: Phase 2（2026年Q2予定）
 **場所**: `.claude/skills/aws-deploy-automation/`
 
 **目的**: AWSへのデプロイを自動化・標準化（CDK/CloudFormation/Terraform対応）
@@ -195,7 +304,8 @@ aws-deploy-automation/
 - Blue/Green、Canaryデプロイ対応
 - CI/CD統合（GitHub Actions、CircleCI）
 
-#### 5. ai-prompt-manager
+##### 8. ai-prompt-manager
+**実装状況**: 🚧 計画中 | **予定Phase**: Phase 2（2026年Q2予定）
 **場所**: `.claude/skills/ai-prompt-manager/`
 
 **目的**: AI APIプロンプトの管理、バージョン管理、A/Bテスト、パフォーマンス分析
@@ -225,7 +335,8 @@ ai-prompt-manager/
 - マルチモデル対応（Claude、GPT、Gemini）
 - コスト追跡とレポート生成
 
-#### 6. api-contract-validator
+##### 9. api-contract-validator
+**実装状況**: 🚧 計画中 | **予定Phase**: Phase 2（2026年Q2予定）
 **場所**: `.claude/skills/api-contract-validator/`
 
 **目的**: フロントエンドとバックエンド間のAPIコントラクト検証
@@ -253,7 +364,8 @@ api-contract-validator/
 - モックサーバー生成で開発加速
 - CI/CDでコントラクト違反を自動検出
 
-#### 7. e2e-test-generator
+##### 10. e2e-test-generator
+**実装状況**: 🚧 計画中 | **予定Phase**: Phase 3（2026年Q3予定）
 **場所**: `.claude/skills/e2e-test-generator/`
 
 **目的**: ユーザーフローからE2Eテストを自動生成（Playwright/Cypress）
@@ -281,7 +393,8 @@ e2e-test-generator/
 - 視覚的回帰テスト（スクリーンショット比較）
 - CI/CD統合で並列実行
 
-#### 8. frontend-performance-auditor
+##### 11. frontend-performance-auditor
+**実装状況**: 🚧 計画中 | **予定Phase**: Phase 2（2026年Q2予定）
 **場所**: `.claude/skills/frontend-performance-auditor/`
 
 **目的**: フロントエンドパフォーマンスの包括的分析と最適化
@@ -307,100 +420,6 @@ frontend-performance-auditor/
 - 画像最適化（WebP変換、レスポンシブ対応）
 - パフォーマンス予算管理
 - CI/CDで予算超過を自動検出
-
-#### 9. aws-cost-optimizer
-**場所**: `.claude/skills/aws-cost-optimizer/`
-
-**目的**: AWSコストを分析し、最適化の提案と自動化を行う
-
-**構造**:
-```
-aws-cost-optimizer/
-├── SKILL.md
-├── scripts/
-│   ├── cost-analyzer.js
-│   ├── unused-resource-detector.js
-│   ├── rightsizing-analyzer.js
-│   └── ri-savings-calculator.js
-├── templates/
-│   └── cost-report-template.md
-└── configs/
-    ├── cost-thresholds.json
-    └── optimization-rules.yaml
-```
-
-**特徴**:
-- AWS Cost ExplorerでコストをService/Tag/環境別に分析
-- 未使用リソースの自動検出（EC2、EBS、EIP、RDS等）
-- EC2/RDSの適正サイズ分析（CPU/メモリ使用率ベース）
-- Reserved Instance/Savings Plans提案（平均30-40%削減）
-- 予算アラート設定とコスト異常検出
-- タグベースのコスト配分レポート
-
-#### 10. database-manager
-**場所**: `.claude/skills/database-manager/`
-
-**目的**: データベースのスキーマ管理、マイグレーション、最適化を自動化
-
-**構造**:
-```
-database-manager/
-├── SKILL.md
-├── scripts/
-│   ├── migration-generator.js
-│   ├── rollback-manager.js
-│   ├── data-validator.js
-│   ├── backup-automation.js
-│   ├── index-optimizer.js
-│   └── query-analyzer.js
-├── templates/
-│   ├── prisma/migration-template.sql
-│   ├── typeorm/migration-template.ts
-│   └── sequelize/migration-template.js
-└── configs/
-    ├── database-config.json
-    └── optimization-rules.json
-```
-
-**特徴**:
-- Prisma/TypeORM/Sequelizeマイグレーション生成
-- 安全なロールバック戦略とバックアップ自動化
-- データ整合性検証（外部キー、NULL制約、重複チェック）
-- インデックス最適化（未使用index削除、必要indexの提案）
-- スロークエリ分析とパフォーマンス改善提案
-- S3/Azureへの自動バックアップ
-
-#### 11. serverless-optimizer
-**場所**: `.claude/skills/serverless-optimizer/`
-
-**目的**: サーバーレスアーキテクチャ（Lambda、API Gateway、DynamoDB等）を最適化
-
-**構造**:
-```
-serverless-optimizer/
-├── SKILL.md
-├── scripts/
-│   ├── lambda-optimizer.js
-│   ├── coldstart-analyzer.js
-│   ├── apigateway-optimizer.js
-│   ├── dynamodb-optimizer.js
-│   └── cost-calculator.js
-├── templates/
-│   ├── lambda/optimized-config.json
-│   ├── apigateway/caching-config.json
-│   └── dynamodb/capacity-config.yaml
-└── configs/
-    ├── optimization-rules.yaml
-    └── performance-thresholds.json
-```
-
-**特徴**:
-- Lambda関数のメモリ/タイムアウト最適化（平均50%コスト削減）
-- コールドスタート削減（Provisioned Concurrency、Lambda Layers）
-- API Gatewayキャッシング設定とスロットリング
-- DynamoDB適正キャパシティ分析（Provisioned vs On-Demand）
-- Step Functions最適化（並列実行、Express Workflows）
-- 包括的コスト分析とROI計算
 
 ### Agent Skills開発のベストプラクティス
 

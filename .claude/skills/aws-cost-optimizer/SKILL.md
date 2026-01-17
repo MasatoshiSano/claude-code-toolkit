@@ -18,6 +18,29 @@ requires:
 
 # AWS Cost Optimizer Agent Skill
 
+## 実装状況
+
+**ステータス**: ✅ Phase 1完了
+**実装日**: 2026-01-17
+**動作保証**: 基本機能
+**実装済み機能**:
+- ✅ コスト分析（cost-analyzer.js）
+- ✅ 未使用リソース検出（unused-resource-detector.js）
+- ✅ Markdownレポート生成（report-generator.js）
+- ✅ 最適化ルール設定（optimization-rules.json）
+- ✅ 閾値設定（thresholds.json）
+
+**未実装機能**（Phase 2以降で実装予定）:
+- 🚧 Right-Sizing分析（right-sizing-analyzer.js）
+- 🚧 RI/Savings Plans提案（ri-savings-plan-advisor.js）
+- 🚧 タグベースコスト配分（tag-cost-allocator.js）
+
+**動作要件**:
+- AWS CLI設定済み（`aws configure`）
+- Cost Explorer API有効化
+- IAM権限: `ce:GetCostAndUsage`, `ec2:Describe*`
+- Node.js依存パッケージ: `npm install @aws-sdk/client-cost-explorer @aws-sdk/client-ec2`
+
 ## Purpose
 
 このスキルは、AWSコストを分析し、具体的な削減提案を行います。

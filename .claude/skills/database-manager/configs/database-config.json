@@ -1,0 +1,141 @@
+{
+  "version": "1.0.0",
+  "description": "Database configuration for database-manager skill",
+  "supported_databases": [
+    "postgresql",
+    "mysql",
+    "sqlite",
+    "mongodb"
+  ],
+  "supported_orms": [
+    "prisma",
+    "typeorm"
+  ],
+  "connection": {
+    "poolSize": {
+      "min": 2,
+      "max": 10,
+      "description": "Connection pool size recommendations"
+    },
+    "timeout": {
+      "connect": 30000,
+      "query": 60000,
+      "description": "Timeout settings in milliseconds"
+    }
+  },
+  "performance": {
+    "slowQueryThreshold": {
+      "milliseconds": 1000,
+      "description": "Queries slower than this are considered slow"
+    },
+    "indexRecommendation": {
+      "minimumUsageCount": 2,
+      "description": "Recommend index if column is used this many times"
+    },
+    "bulkInsertThreshold": 100,
+    "description": "Use bulk insert for operations above this threshold"
+  },
+  "schema": {
+    "namingConventions": {
+      "tables": "snake_case",
+      "columns": "snake_case",
+      "indexes": "idx_{table}_{columns}",
+      "foreignKeys": "{table}_{column}_fkey"
+    },
+    "requiredFields": [
+      "id",
+      "created_at",
+      "updated_at"
+    ],
+    "timestamps": {
+      "createdAt": "created_at",
+      "updatedAt": "updated_at",
+      "autoUpdate": true
+    }
+  },
+  "indexes": {
+    "autoCreate": {
+      "primaryKeys": true,
+      "foreignKeys": true,
+      "uniqueConstraints": true,
+      "timestamps": true
+    },
+    "types": {
+      "btree": "Default for most queries",
+      "hash": "For exact match queries",
+      "gin": "For full-text search (PostgreSQL)",
+      "gist": "For geometric data (PostgreSQL)"
+    }
+  },
+  "migrations": {
+    "directory": "migrations",
+    "tableName": "_migrations",
+    "createIfNotExists": true,
+    "runInTransaction": true,
+    "backupBeforeMigration": true
+  },
+  "backup": {
+    "enabled": true,
+    "frequency": "daily",
+    "retention": {
+      "daily": 7,
+      "weekly": 4,
+      "monthly": 12
+    },
+    "compression": true,
+    "destination": {
+      "local": "./backups",
+      "s3": {
+        "enabled": false,
+        "bucket": "",
+        "region": "us-east-1"
+      }
+    }
+  },
+  "security": {
+    "ssl": {
+      "enabled": true,
+      "rejectUnauthorized": true
+    },
+    "encryption": {
+      "atRest": true,
+      "inTransit": true
+    },
+    "credentials": {
+      "useEnvironmentVariables": true,
+      "rotationPeriod": "90days"
+    }
+  },
+  "monitoring": {
+    "slowQueries": {
+      "log": true,
+      "threshold": 1000
+    },
+    "connectionPool": {
+      "monitor": true,
+      "alertOnHighUsage": 0.8
+    },
+    "deadlocks": {
+      "detect": true,
+      "retry": true,
+      "maxRetries": 3
+    }
+  },
+  "optimization": {
+    "autoVacuum": {
+      "enabled": true,
+      "threshold": 0.2,
+      "description": "Auto vacuum when 20% of rows are dead (PostgreSQL)"
+    },
+    "analyze": {
+      "enabled": true,
+      "frequency": "weekly",
+      "description": "Update table statistics for query planner"
+    },
+    "partitioning": {
+      "recommend": true,
+      "threshold": 10000000,
+      "description": "Recommend partitioning for tables with 10M+ rows"
+    }
+  }
+}
