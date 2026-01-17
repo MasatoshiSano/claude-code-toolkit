@@ -17,6 +17,33 @@ requires:
 
 # Code Quality Suite Agent Skill
 
+## 実装状況
+
+**ステータス**: ✅ 実装済み
+**実装日**: 2026-01-17
+**動作保証**: 基本機能（`/check`コマンドと統合）
+**実装済み機能**:
+- ✅ コード品質チェック（quality-checker.js）- ESLint/TypeScript/複雑度分析
+- ✅ セキュリティスキャン（security-scanner.js）- npm audit、シークレット検出
+- ✅ 統合レポート生成（report-generator.js）- Markdown形式の包括的レポート
+- ✅ ESLintルール設定（configs/eslint-rules.json）
+- ✅ セキュリティルール（configs/security-rules.yaml）
+- ✅ OWASP Top 10チェックリスト（configs/owasp-checklist.md）
+
+**未実装機能**（Phase 2以降で実装予定）:
+- 🚧 パフォーマンス分析（performance-analyzer.js）
+- 🚧 依存関係監査詳細（dependency-auditor.js）
+- 🚧 テストカバレッジ統合
+
+**動作要件**:
+- Node.js >= 16
+- ESLint（オプション）
+- TypeScript（オプション）
+- npm（依存関係スキャン用）
+
+**`/check`コマンドとの統合**:
+このスキルは既存の`/check`コマンドの基盤として機能します。`/check`を実行すると、quality-checker.jsとsecurity-scanner.jsが自動的に実行されます。
+
 ## Purpose
 
 このスキルは、コード品質、セキュリティ、パフォーマンスを包括的に分析し、

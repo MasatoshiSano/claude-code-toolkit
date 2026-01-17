@@ -16,6 +16,33 @@ requires:
 
 # Technical Blog Generator Agent Skill
 
+## 実装状況
+
+**ステータス**: ✅ 実装済み
+**実装日**: 2026-01-17
+**動作保証**: 基本機能（`/blog`コマンドと統合）
+**実装済み機能**:
+- ✅ コミット分析（analyze-commit.js）- git diff解析、技術スタック検出、影響範囲分析
+- ✅ ブログトピック検出（detect-blog-topics.js）- 自動テーマ抽出、優先度付け
+- ✅ 記事生成（generate-article.js）- テンプレートベース、複数記事対応
+- ✅ テンプレート3種（beginner/intermediate/advanced）
+- ✅ 初心者向け細分化対応（1記事1テーマ）
+- ✅ Before/After、数値重視の記事構成
+
+**未実装機能**（Phase 2以降で実装予定）:
+- 🚧 対話型Q&A（interactive-qa.js）
+- 🚧 サンプル記事（examples/sample-articles/）
+- 🚧 画像・図表の自動生成
+- 🚧 複数プラットフォーム対応（Qiita、Zenn、Medium等）
+
+**動作要件**:
+- Node.js >= 16
+- Git（リポジトリ必須）
+- 前回コミットが存在すること
+
+**`/blog`コマンドとの統合**:
+このスキルは既存の`/blog`コマンドの基盤として機能します。`/blog`を実行すると、analyze-commit.js、detect-blog-topics.js、generate-article.jsが自動的に実行されます。
+
 ## Purpose
 
 このスキルは、コミットからの変更を自動分析し、初心者にもわかりやすい技術ブログ記事を生成します。
