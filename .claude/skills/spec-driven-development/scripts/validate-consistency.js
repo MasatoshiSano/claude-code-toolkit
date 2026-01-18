@@ -7,6 +7,9 @@
 
 const fs = require('fs');
 const path = require('path');
+const { Logger } = require('@claude-skills/utils');
+
+const logger = new Logger('spec-driven-development:validate-consistency');
 
 /**
  * ドキュメントの整合性を検証
@@ -16,7 +19,7 @@ const path = require('path');
 function validateConsistency(options = {}) {
   const { docPath = '.tmp', verbose = false } = options;
 
-  console.log('\n🔍 Validating document consistency...\n');
+  logger.info('\n🔍 Validating document consistency...\n');
 
   const results = {
     requirements: null,
@@ -25,8 +28,8 @@ function validateConsistency(options = {}) {
     consistency: {
       valid: true,
       errors: [],
-      warnings: [],
-    },
+      warnings: []
+    }
   };
 
   // ドキュメントを読み込む
@@ -71,7 +74,7 @@ function loadDocument(filepath) {
     sections: extractSections(content),
     components: extractComponents(content),
     requirements: extractRequirements(content),
-    tasks: extractTasks(content),
+    tasks: extractTasks(content)
   };
 }
 
@@ -140,7 +143,7 @@ function extractRequirements(content) {
   const functionalReqs = sections['機能要件'] || '';
   const nonFunctionalReqs = sections['非機能要件'] || '';
 
-  const allReqs = functionalReqs + '\n' + nonFunctionalReqs;
+  const allReqs = `${functionalReqs}\n${nonFunctionalReqs}`;
   const lines = allReqs.split('\n');
 
   lines.forEach((line) => {
@@ -186,8 +189,8 @@ function validateComponentConsistency(results) {
 
   // 設計書に記載されているコンポーネントがタスクにも存在するか
   designComponents.forEach((component) => {
-    const foundInTasks = tasksComponents.some((taskComp) =>
-      taskComp.includes(component) || component.includes(taskComp)
+    const foundInTasks = tasksComponents.some(
+      (taskComp) => taskComp.includes(component) || component.includes(taskComp)
     );
 
     if (!foundInTasks) {
@@ -199,14 +202,12 @@ function validateComponentConsistency(results) {
 
   // タスクに記載されているコンポーネントが設計書にも存在するか
   tasksComponents.forEach((component) => {
-    const foundInDesign = designComponents.some((designComp) =>
-      designComp.includes(component) || component.includes(designComp)
+    const foundInDesign = designComponents.some(
+      (designComp) => designComp.includes(component) || component.includes(designComp)
     );
 
     if (!foundInDesign) {
-      results.consistency.errors.push(
-        `Component "${component}" is mentioned in tasks.md but not defined in design.md`
-      );
+      results.consistency.errors.push(`Component "${component}" is mentioned in tasks.md but not defined in design.md`);
       results.consistency.valid = false;
     }
   });
@@ -217,21 +218,17 @@ function validateComponentConsistency(results) {
  * @param {Object} results - 検証結果オブジェクト
  */
 function validateRequirementsCoverage(results) {
-  const requirements = results.requirements.requirements;
+  const { requirements } = results.requirements;
   const designContent = results.design.content.toLowerCase();
 
   // 各要件が設計書でカバーされているか確認
   requirements.forEach((req) => {
     const keywords = extractKeywords(req);
 
-    const isCovered = keywords.some((keyword) =>
-      designContent.includes(keyword.toLowerCase())
-    );
+    const isCovered = keywords.some((keyword) => designContent.includes(keyword.toLowerCase()));
 
     if (!isCovered && keywords.length > 0) {
-      results.consistency.warnings.push(
-        `Requirement "${req.substring(0, 50)}..." may not be covered in design.md`
-      );
+      results.consistency.warnings.push(`Requirement "${req.substring(0, 50)}..." may not be covered in design.md`);
     }
   });
 }
@@ -242,18 +239,14 @@ function validateRequirementsCoverage(results) {
  */
 function validateTasksCoverage(results) {
   const designComponents = results.design.components;
-  const tasks = results.tasks.tasks;
+  const { tasks } = results.tasks;
 
   // 各コンポーネントに対応するタスクが存在するか
   designComponents.forEach((component) => {
-    const hasTasks = tasks.some((task) =>
-      task.toLowerCase().includes(component.toLowerCase())
-    );
+    const hasTasks = tasks.some((task) => task.toLowerCase().includes(component.toLowerCase()));
 
     if (!hasTasks) {
-      results.consistency.warnings.push(
-        `Component "${component}" in design.md has no corresponding tasks in tasks.md`
-      );
+      results.consistency.warnings.push(`Component "${component}" in design.md has no corresponding tasks in tasks.md`);
     }
   });
 }
@@ -270,12 +263,10 @@ function validateNamingConsistency(results) {
   // コンポーネント名の表記揺れをチェック
   designComponents.forEach((component) => {
     // 英語表記と日本語表記の混在チェック
-    const variations = findComponentVariations(component, reqContent + '\n' + tasksContent);
+    const variations = findComponentVariations(component, `${reqContent}\n${tasksContent}`);
 
     if (variations.length > 1) {
-      results.consistency.warnings.push(
-        `Component "${component}" has naming variations: ${variations.join(', ')}`
-      );
+      results.consistency.warnings.push(`Component "${component}" has naming variations: ${variations.join(', ')}`);
     }
   });
 }
@@ -295,7 +286,7 @@ function findComponentVariations(component, content) {
     component.toLowerCase(),
     component.toUpperCase(),
     component.replace(/([A-Z])/g, ' $1').trim(), // CamelCase → space separated
-    component.replace(/\s+/g, ''), // space → no space
+    component.replace(/\s+/g, '') // space → no space
   ];
 
   patterns.forEach((pattern) => {
@@ -320,9 +311,7 @@ function validateDependencies(results) {
   const cycles = findCycles(dependencies);
 
   cycles.forEach((cycle) => {
-    results.consistency.errors.push(
-      `Circular dependency detected: ${cycle.join(' → ')}`
-    );
+    results.consistency.errors.push(`Circular dependency detected: ${cycle.join(' → ')}`);
     results.consistency.valid = false;
   });
 }
@@ -342,7 +331,7 @@ function extractDependencies(content) {
     if (line.trim().startsWith('-') || line.trim().startsWith('*')) {
       currentTask = line.trim().substring(1).trim();
       dependencies[currentTask] = [];
-    } else if (currentTask && line.includes('依存:') || line.includes('前提:')) {
+    } else if ((currentTask && line.includes('依存:')) || line.includes('前提:')) {
       // 依存関係を抽出
       const match = line.match(/[依存|前提]:\s*(.+)/);
       if (match) {
@@ -403,9 +392,7 @@ function extractKeywords(text) {
   // ストップワードを除いた単語を抽出
   const stopWords = new Set(['の', 'は', 'を', 'が', 'に', 'で', 'と', 'する', 'できる', 'ある']);
 
-  const words = text
-    .split(/[\s、。,.]/)
-    .filter((word) => word.length > 1 && !stopWords.has(word));
+  const words = text.split(/[\s、。,.]/).filter((word) => word.length > 1 && !stopWords.has(word));
 
   return words;
 }
@@ -416,44 +403,44 @@ function extractKeywords(text) {
  * @param {boolean} verbose - 詳細表示
  */
 function displayResults(results, verbose) {
-  console.log('📊 Validation Results\n');
+  logger.info('📊 Validation Results\n');
 
   if (results.consistency.valid) {
-    console.log('✅ All documents are consistent!\n');
+    logger.info('✅ All documents are consistent!\n');
   } else {
-    console.log('❌ Consistency issues detected\n');
+    logger.info('❌ Consistency issues detected\n');
   }
 
   // エラーを表示
   if (results.consistency.errors.length > 0) {
-    console.log('🚨 Errors:');
+    logger.info('🚨 Errors:');
     results.consistency.errors.forEach((error, index) => {
-      console.log(`  ${index + 1}. ${error}`);
+      logger.info(`  ${index + 1}. ${error}`);
     });
-    console.log('');
+    logger.info('');
   }
 
   // 警告を表示
   if (results.consistency.warnings.length > 0) {
-    console.log('⚠️  Warnings:');
+    logger.info('⚠️  Warnings:');
     results.consistency.warnings.forEach((warning, index) => {
-      console.log(`  ${index + 1}. ${warning}`);
+      logger.info(`  ${index + 1}. ${warning}`);
     });
-    console.log('');
+    logger.info('');
   }
 
   // サマリー
-  console.log('Summary:');
-  console.log(`  Errors: ${results.consistency.errors.length}`);
-  console.log(`  Warnings: ${results.consistency.warnings.length}`);
-  console.log('');
+  logger.info('Summary:');
+  logger.info(`  Errors: ${results.consistency.errors.length}`);
+  logger.info(`  Warnings: ${results.consistency.warnings.length}`);
+  logger.info('');
 
   if (verbose) {
-    console.log('Component Analysis:');
-    console.log(`  Requirements: ${results.requirements.requirements.length} items`);
-    console.log(`  Design Components: ${results.design.components.length} components`);
-    console.log(`  Tasks: ${results.tasks.tasks.length} tasks`);
-    console.log('');
+    logger.info('Component Analysis:');
+    logger.info(`  Requirements: ${results.requirements.requirements.length} items`);
+    logger.info(`  Design Components: ${results.design.components.length} components`);
+    logger.info(`  Tasks: ${results.tasks.tasks.length} tasks`);
+    logger.info('');
   }
 }
 
@@ -469,7 +456,7 @@ function saveResults(results, outputPath) {
   }
 
   fs.writeFileSync(outputPath, JSON.stringify(results, null, 2));
-  console.log(`✓ Validation results saved to: ${outputPath}\n`);
+  logger.info(`✓ Validation results saved to: ${outputPath}\n`);
 }
 
 /**
@@ -499,7 +486,7 @@ async function main() {
       process.exit(1);
     }
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    logger.error('❌ Error:', error.message);
     process.exit(1);
   }
 }
@@ -513,5 +500,5 @@ module.exports = {
   validateConsistency,
   validateComponentConsistency,
   validateRequirementsCoverage,
-  validateTasksCoverage,
+  validateTasksCoverage
 };

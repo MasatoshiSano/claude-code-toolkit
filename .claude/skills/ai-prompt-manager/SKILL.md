@@ -1,6 +1,8 @@
 ---
 name: ai-prompt-manager
-description: Manage, version control, and optimize AI prompts with A/B testing and performance analysis
+description:
+  Manage, version control, and optimize AI prompts with A/B testing and
+  performance analysis
 version: 1.0.0
 author: Claude Code Toolkit
 license: MIT
@@ -21,8 +23,8 @@ requires:
 
 ## Purpose
 
-このスキルは、AI APIプロンプトの一元管理、バージョン管理、A/Bテスト、パフォーマンス分析を提供します。
-プロンプトの品質向上とコスト最適化を実現し、複数のAIモデル（Claude、GPT、Gemini等）に対応します。
+このスキルは、AI
+APIプロンプトの一元管理、バージョン管理、A/Bテスト、パフォーマンス分析を提供します。プロンプトの品質向上とコスト最適化を実現し、複数のAIモデル（Claude、GPT、Gemini等）に対応します。
 
 ## When to Use
 
@@ -74,6 +76,7 @@ configs/
 #### 1.1 プロンプトテンプレートの構造
 
 **基本構造:**
+
 ```markdown
 ---
 id: customer-support-v1
@@ -91,9 +94,9 @@ author: engineering-team
 
 # System Prompt
 
-You are a helpful customer support assistant for [Company Name].
-Your goal is to assist customers with their questions and issues in a friendly,
-professional manner.
+You are a helpful customer support assistant for [Company Name]. Your goal is to
+assist customers with their questions and issues in a friendly, professional
+manner.
 
 ## Guidelines
 
@@ -124,18 +127,23 @@ professional manner.
 # Examples
 
 ## Example 1: Order Status Inquiry
-User: "Where is my order #12345?"
-Assistant: "Hi! I'd be happy to help you track your order #12345.
 
-I can see that your order was shipped yesterday via UPS and is currently in transit. The expected delivery date is January 18th. You can track it using this link: [tracking_link]
+User: "Where is my order #12345?" Assistant: "Hi! I'd be happy to help you track
+your order #12345.
+
+I can see that your order was shipped yesterday via UPS and is currently in
+transit. The expected delivery date is January 18th. You can track it using this
+link: [tracking_link]
 
 Is there anything else I can help you with today?"
 
 ## Example 2: Product Question
-User: "Does this product come in blue?"
-Assistant: "Hi there! Let me check the available colors for you.
 
-Yes, this product is available in blue, along with red, black, and white. Would you like me to add the blue version to your cart?
+User: "Does this product come in blue?" Assistant: "Hi there! Let me check the
+available colors for you.
+
+Yes, this product is available in blue, along with red, black, and white. Would
+you like me to add the blue version to your cart?
 
 Is there anything else I can help you with?"
 ```
@@ -143,6 +151,7 @@ Is there anything else I can help you with?"
 #### 1.2 プロンプトレジストリへの登録
 
 **prompt-registry.json:**
+
 ```json
 {
   "prompts": [
@@ -191,6 +200,7 @@ Is there anything else I can help you with?"
 #### 2.1 A/Bテスト設定
 
 **ab-test-configs.yaml:**
+
 ```yaml
 tests:
   - name: customer-support-optimization
@@ -207,17 +217,17 @@ tests:
     metrics:
       primary:
         - name: qualityScore
-          target: "> 4.0"
+          target: '> 4.0'
           weight: 0.5
       secondary:
         - name: avgTokens
-          target: "< 1200"
+          target: '< 1200'
           weight: 0.2
         - name: avgLatency
-          target: "< 1.5s"
+          target: '< 1.5s'
           weight: 0.2
         - name: cost
-          target: "< $0.015"
+          target: '< $0.015'
           weight: 0.1
     sampleSize: 1000
     significanceLevel: 0.05
@@ -264,7 +274,7 @@ async function analyzeABTest(testId) {
         qualityScore: 4.4,
         avgTokens: 1050,
         avgLatency: 1.1,
-        avgCost: 0.010,
+        avgCost: 0.01,
         errorRate: 0.3
       }
     },
@@ -294,37 +304,41 @@ async function analyzeABTest(testId) {
 ```
 
 **出力レポート:**
+
 ```markdown
 # A/B Test Results: customer-support-optimization
 
 ## Summary
+
 - **Winner**: Group B (customer-support-v2)
 - **Confidence**: 95% (p-value < 0.05)
 - **Recommendation**: Deploy to production
 
 ## Metrics Comparison
 
-| Metric          | Group A (v1) | Group B (v2) | Change    | Significant |
-|-----------------|--------------|--------------|-----------|-------------|
-| Quality Score   | 4.2/5        | 4.4/5        | +4.8%     | ✅ Yes      |
-| Avg Tokens      | 1,234        | 1,050        | -14.9%    | ✅ Yes      |
-| Avg Latency     | 1.2s         | 1.1s         | -8.3%     | ✅ Yes      |
-| Avg Cost        | $0.012       | $0.010       | -16.7%    | ✅ Yes      |
-| Error Rate      | 0.5%         | 0.3%         | -40.0%    | ✅ Yes      |
+| Metric        | Group A (v1) | Group B (v2) | Change | Significant |
+| ------------- | ------------ | ------------ | ------ | ----------- |
+| Quality Score | 4.2/5        | 4.4/5        | +4.8%  | ✅ Yes      |
+| Avg Tokens    | 1,234        | 1,050        | -14.9% | ✅ Yes      |
+| Avg Latency   | 1.2s         | 1.1s         | -8.3%  | ✅ Yes      |
+| Avg Cost      | $0.012       | $0.010       | -16.7% | ✅ Yes      |
+| Error Rate    | 0.5%         | 0.3%         | -40.0% | ✅ Yes      |
 
 ## Impact Analysis
+
 - **Quality**: Improved (+0.2 points)
 - **Performance**: 8.3% faster
 - **Cost**: 16.7% cheaper
 
-**Estimated monthly savings**: $4,320
-(Based on 360,000 requests/month)
+**Estimated monthly savings**: $4,320 (Based on 360,000 requests/month)
 
 ## User Feedback
+
 - Group A: 82% positive
 - Group B: 89% positive (+8.5%)
 
 ## Recommendation
+
 ✅ **Deploy customer-support-v2 to production immediately**
 
 This version shows statistically significant improvements across all metrics
@@ -490,6 +504,7 @@ agent ai-prompt-manager cost-report --period=monthly
 #### 5.1 モデル設定
 
 **model-configs.json:**
+
 ```json
 {
   "models": [

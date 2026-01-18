@@ -5,9 +5,12 @@
  * コスト分析を実行し、サービス別、環境別、チーム別のコスト内訳を取得
  */
 
-const { CostExplorerClient, GetCostAndUsageCommand } = require('@aws-sdk/client-cost-explorer');
 const fs = require('fs');
 const path = require('path');
+const { CostExplorerClient, GetCostAndUsageCommand } = require('@aws-sdk/client-cost-explorer');
+const { Logger } = require('@claude-skills/utils');
+
+const logger = new Logger('aws-cost-optimizer:cost-analyzer');
 
 /**
  * コスト分析を実行
@@ -18,14 +21,14 @@ const path = require('path');
  * @returns {Promise<Object>} コスト分析結果
  */
 async function analyzeCost(options = {}) {
-  const { period = 'last-30-days', groupBy = 'service', region = 'us-east-1' } = options;
+  const { period = 'last-30-days', groupBy: _groupBy = 'service', region = 'us-east-1' } = options;
 
   // 依存関係チェック
   try {
     require('@aws-sdk/client-cost-explorer');
   } catch (error) {
-    console.error('❌ Error: AWS SDK not found');
-    console.log('Install: npm install @aws-sdk/client-cost-explorer');
+    logger.error('❌ Error: AWS SDK not found');
+    logger.info('Install: npm install @aws-sdk/client-cost-explorer');
     process.exit(1);
   }
 
@@ -40,16 +43,16 @@ async function analyzeCost(options = {}) {
     const params = {
       TimePeriod: {
         Start: start,
-        End: end,
+        End: end
       },
       Granularity: 'DAILY',
       Metrics: ['UnblendedCost'],
       GroupBy: [
         {
           Type: 'DIMENSION',
-          Key: 'SERVICE',
-        },
-      ],
+          Key: 'SERVICE'
+        }
+      ]
     };
 
     const command = new GetCostAndUsageCommand(params);
@@ -61,13 +64,13 @@ async function analyzeCost(options = {}) {
     return analysis;
   } catch (error) {
     if (error.name === 'CredentialsProviderError') {
-      console.error('❌ AWS credentials not configured');
-      console.log('Run: aws configure');
+      logger.error('❌ AWS credentials not configured');
+      logger.info('Run: aws configure');
       process.exit(1);
     } else if (error.name === 'AccessDeniedException') {
-      console.error('❌ Cost Explorer API not enabled or insufficient permissions');
-      console.log('Enable: https://console.aws.amazon.com/cost-management/');
-      console.log('Required IAM permissions: ce:GetCostAndUsage');
+      logger.error('❌ Cost Explorer API not enabled or insufficient permissions');
+      logger.info('Enable: https://console.aws.amazon.com/cost-management/');
+      logger.info('Required IAM permissions: ce:GetCostAndUsage');
       process.exit(1);
     } else {
       throw error;
@@ -102,7 +105,7 @@ function calculatePeriod(period) {
 
   return {
     start: start.toISOString().split('T')[0],
-    end: end.toISOString().split('T')[0],
+    end: end.toISOString().split('T')[0]
   };
 }
 
@@ -139,7 +142,7 @@ function processCostandUsageData(response, period) {
     .map(([service, cost]) => ({
       service,
       cost: cost.toFixed(2),
-      percentage: ((cost / totalCost) * 100).toFixed(1),
+      percentage: ((cost / totalCost) * 100).toFixed(1)
     }));
 
   return {
@@ -147,7 +150,7 @@ function processCostandUsageData(response, period) {
     totalCost: totalCost.toFixed(2),
     currency: 'USD',
     serviceBreakdown: sortedServices,
-    analyzedDays: results.length,
+    analyzedDays: results.length
   };
 }
 
@@ -156,17 +159,17 @@ function processCostandUsageData(response, period) {
  * @param {Object} analysis - 分析結果
  */
 function displayAnalysis(analysis) {
-  console.log('\n📊 AWS Cost Analysis\n');
-  console.log(`Period: ${analysis.period}`);
-  console.log(`Total Cost: $${analysis.totalCost} ${analysis.currency}`);
-  console.log(`Analyzed Days: ${analysis.analyzedDays}\n`);
+  logger.info('\n📊 AWS Cost Analysis\n');
+  logger.info(`Period: ${analysis.period}`);
+  logger.info(`Total Cost: $${analysis.totalCost} ${analysis.currency}`);
+  logger.info(`Analyzed Days: ${analysis.analyzedDays}\n`);
 
-  console.log('Top 10 Services by Cost:\n');
+  logger.info('Top 10 Services by Cost:\n');
   analysis.serviceBreakdown.forEach((item, index) => {
-    console.log(`${index + 1}. ${item.service.padEnd(30)} $${item.cost.padStart(10)} (${item.percentage}%)`);
+    logger.info(`${index + 1}. ${item.service.padEnd(30)} $${item.cost.padStart(10)} (${item.percentage}%)`);
   });
 
-  console.log('');
+  logger.info('');
 }
 
 /**
@@ -199,9 +202,9 @@ async function main() {
     const outputPath = path.join(reportsDir, `cost-analysis-${timestamp}.json`);
     fs.writeFileSync(outputPath, JSON.stringify(analysis, null, 2));
 
-    console.log(`\n✓ Report saved to: ${outputPath}\n`);
+    logger.info(`\n✓ Report saved to: ${outputPath}\n`);
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    logger.error('❌ Error:', error.message);
     process.exit(1);
   }
 }

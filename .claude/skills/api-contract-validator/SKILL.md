@@ -1,6 +1,7 @@
 ---
 name: api-contract-validator
-description: Validate API contracts between frontend and backend with OpenAPI/Swagger
+description:
+  Validate API contracts between frontend and backend with OpenAPI/Swagger
 version: 1.0.0
 author: Claude Code Toolkit
 license: MIT
@@ -20,8 +21,7 @@ requires:
 
 ## Purpose
 
-このスキルは、フロントエンドとバックエンド間のAPIコントラクトを検証し、型安全性を保証します。
-OpenAPI/Swagger仕様の自動生成、破壊的変更の検出、型安全なクライアントコード生成を行います。
+このスキルは、フロントエンドとバックエンド間のAPIコントラクトを検証し、型安全性を保証します。OpenAPI/Swagger仕様の自動生成、破壊的変更の検出、型安全なクライアントコード生成を行います。
 
 ## When to Use
 
@@ -59,6 +59,7 @@ validators/
 #### 1.1 バックエンドコードからの自動生成
 
 **Express + TypeScript:**
+
 ```typescript
 // src/api/users.ts
 import { z } from 'zod';
@@ -81,6 +82,7 @@ app.get('/api/users/:id', async (req, res) => {
 ```
 
 **生成されるOpenAPI仕様:**
+
 ```yaml
 openapi: 3.0.0
 info:
@@ -202,6 +204,7 @@ async function validateRequest(spec, endpoint, method, request) {
 ```
 
 **実行例:**
+
 ```bash
 # エンドポイントをテスト
 agent api-contract-validator test \
@@ -320,10 +323,11 @@ agent api-contract-validator diff \
 ## Breaking Changes
 
 ### 1. Remove DELETE /api/users/{id}
-**Impact**: HIGH
-**Affected Clients**: Web App, Mobile App
+
+**Impact**: HIGH **Affected Clients**: Web App, Mobile App
 
 **Migration Steps**:
+
 1. Mark endpoint as deprecated in v1
 2. Add warning in v1 responses
 3. Provide alternative: POST /api/users/{id}/deactivate
@@ -333,10 +337,11 @@ agent api-contract-validator diff \
 **Timeline**: 6 weeks
 
 ### 2. Change 'amount' type: string → number
-**Impact**: HIGH
-**Affected Clients**: All
+
+**Impact**: HIGH **Affected Clients**: All
 
 **Migration Steps**:
+
 1. Support both types in v1.5 (transition version)
 2. Update client code to use number
 3. Deploy updated clients
@@ -369,6 +374,7 @@ agent api-contract-validator generate-client \
 ```
 
 **生成されたクライアントコード:**
+
 ```typescript
 // src/api/client/types.ts
 export interface User {
@@ -398,7 +404,7 @@ export class ApiClient {
     create: async (data: CreateUserRequest): Promise<User> => {
       const response = await this.request<User>('POST', '/api/users', data);
       return response;
-    },
+    }
 
     // ... other methods
   };
@@ -457,6 +463,7 @@ agent api-contract-validator mock-server \
 ```
 
 **モックレスポンス例:**
+
 ```json
 // GET /api/users/123
 {

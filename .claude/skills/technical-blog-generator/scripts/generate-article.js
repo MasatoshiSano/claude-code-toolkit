@@ -7,6 +7,9 @@
 
 const fs = require('fs');
 const path = require('path');
+const { Logger } = require('@claude-skills/utils');
+
+const logger = new Logger('technical-blog-generator:generate-article');
 
 /**
  * 記事を生成
@@ -18,7 +21,7 @@ const path = require('path');
 function generateArticle(topic, commitAnalysis, options = {}) {
   const { outputDir = '_docs/blog', autoSave = true } = options;
 
-  console.log(`\n✍️  Generating article: ${topic.title}...\n`);
+  logger.info(`\n✍️  Generating article: ${topic.title}...\n`);
 
   // テンプレートを選択
   const template = loadTemplate(topic.targetAudience);
@@ -43,12 +46,12 @@ function generateArticle(topic, commitAnalysis, options = {}) {
  */
 function loadTemplate(audience) {
   const templateMap = {
-    'beginner': 'beginner-article.md',
-    'intermediate': 'intermediate-article.md',
-    'advanced': 'advanced-article.md',
+    beginner: 'beginner-article.md',
+    intermediate: 'intermediate-article.md',
+    advanced: 'advanced-article.md'
   };
 
-  const templateFile = templateMap[audience] || templateMap['beginner'];
+  const templateFile = templateMap[audience] || templateMap.beginner;
   const templatePath = path.join(__dirname, '..', 'templates', templateFile);
 
   if (!fs.existsSync(templatePath)) {
@@ -80,7 +83,7 @@ function populateTemplate(template, topic, commitAnalysis) {
     '{{KEY_FILES}}': generateKeyFilesList(topic.keyFiles),
     '{{CODE_EXAMPLES}}': generateCodeExamples(topic, commitAnalysis),
     '{{BEFORE_AFTER}}': generateBeforeAfter(topic, commitAnalysis),
-    '{{RESULTS}}': generateResults(topic, commitAnalysis),
+    '{{RESULTS}}': generateResults(topic, commitAnalysis)
   };
 
   let article = template;
@@ -121,7 +124,7 @@ function generateCodeExamples(topic, commitAnalysis) {
 
   // 最も変更が大きいファイルを取得
   const mainChange = changes.codeChanges.reduce((prev, curr) =>
-    (prev.additions + prev.deletions) > (curr.additions + curr.deletions) ? prev : curr
+    prev.additions + prev.deletions > curr.additions + curr.deletions ? prev : curr
   );
 
   const ext = path.extname(mainChange.file).substring(1) || 'javascript';
@@ -186,11 +189,11 @@ function generateResults(topic, commitAnalysis) {
 
   // トピックタイプに応じた追加メトリクス
   if (topic.type === 'performance') {
-    lines.push(`| パフォーマンス改善 | （計測結果を記載） |`);
-    lines.push(`| 実行時間短縮 | （Before/Afterを記載） |`);
+    lines.push('| パフォーマンス改善 | （計測結果を記載） |');
+    lines.push('| 実行時間短縮 | （Before/Afterを記載） |');
   } else if (topic.type === 'refactoring') {
-    lines.push(`| コード品質向上 | （ESLintスコア等を記載） |`);
-    lines.push(`| 複雑度削減 | （Cyclomatic Complexity等を記載） |`);
+    lines.push('| コード品質向上 | （ESLintスコア等を記載） |');
+    lines.push('| 複雑度削減 | （Cyclomatic Complexity等を記載） |');
   }
 
   lines.push('');
@@ -229,7 +232,7 @@ function saveArticle(article, filepath) {
   }
 
   fs.writeFileSync(filepath, article, 'utf8');
-  console.log(`✅ Article saved to: ${filepath}\n`);
+  logger.info(`✅ Article saved to: ${filepath}\n`);
 }
 
 /**
@@ -240,15 +243,15 @@ function saveArticle(article, filepath) {
  * @returns {Array} 生成された記事パス一覧
  */
 function generateMultipleArticles(topics, commitAnalysis, options = {}) {
-  console.log(`\n📚 Generating ${topics.length} article(s)...\n`);
+  logger.info(`\n📚 Generating ${topics.length} article(s)...\n`);
 
   const generatedFiles = [];
 
   topics.forEach((topic, index) => {
-    console.log(`[${index + 1}/${topics.length}] ${topic.title}`);
+    logger.info(`[${index + 1}/${topics.length}] ${topic.title}`);
 
     try {
-      const article = generateArticle(topic, commitAnalysis, options);
+      const _article = generateArticle(topic, commitAnalysis, options);
 
       if (options.autoSave) {
         const filename = generateFilename(topic);
@@ -256,11 +259,11 @@ function generateMultipleArticles(topics, commitAnalysis, options = {}) {
         generatedFiles.push(filepath);
       }
     } catch (error) {
-      console.error(`  ❌ Error: ${error.message}`);
+      logger.error(`  ❌ Error: ${error.message}`);
     }
   });
 
-  console.log(`\n✅ Generated ${generatedFiles.length} article(s)\n`);
+  logger.info(`\n✅ Generated ${generatedFiles.length} article(s)\n`);
 
   return generatedFiles;
 }
@@ -272,20 +275,20 @@ function generateMultipleArticles(topics, commitAnalysis, options = {}) {
  * @returns {Promise<Array>} 生成された記事パス一覧
  */
 async function generateArticlesInteractive(topics, commitAnalysis) {
-  console.log('\n🤖 Interactive Article Generation\n');
-  console.log('Select topics to generate articles:\n');
+  logger.info('\n🤖 Interactive Article Generation\n');
+  logger.info('Select topics to generate articles:\n');
 
   topics.forEach((topic, index) => {
-    console.log(`${index + 1}. [${topic.priority}] ${topic.title}`);
-    console.log(`   ${topic.description}`);
-    console.log('');
+    logger.info(`${index + 1}. [${topic.priority}] ${topic.title}`);
+    logger.info(`   ${topic.description}`);
+    logger.info('');
   });
 
   // 実際の対話的選択は Claude Code の AskUserQuestion で実装される
   // ここでは全トピックを生成
   return generateMultipleArticles(topics, commitAnalysis, {
     outputDir: '_docs/blog',
-    autoSave: true,
+    autoSave: true
   });
 }
 
@@ -294,18 +297,18 @@ async function generateArticlesInteractive(topics, commitAnalysis) {
  * @param {Array} generatedFiles - 生成されたファイルパス一覧
  */
 function generateSummary(generatedFiles) {
-  console.log('\n📋 Summary\n');
-  console.log(`Generated ${generatedFiles.length} article(s):\n`);
+  logger.info('\n📋 Summary\n');
+  logger.info(`Generated ${generatedFiles.length} article(s):\n`);
 
   generatedFiles.forEach((file, index) => {
-    console.log(`${index + 1}. ${path.basename(file)}`);
+    logger.info(`${index + 1}. ${path.basename(file)}`);
   });
 
-  console.log('\n💡 Next Steps:');
-  console.log('1. Review and edit the generated articles');
-  console.log('2. Add screenshots, diagrams, or additional code examples');
-  console.log('3. Run benchmarks and add actual performance metrics');
-  console.log('4. Publish to your blog platform\n');
+  logger.info('\n💡 Next Steps:');
+  logger.info('1. Review and edit the generated articles');
+  logger.info('2. Add screenshots, diagrams, or additional code examples');
+  logger.info('3. Run benchmarks and add actual performance metrics');
+  logger.info('4. Publish to your blog platform\n');
 }
 
 /**
@@ -315,7 +318,7 @@ async function main() {
   const args = process.argv.slice(2);
 
   if (args.length < 2) {
-    console.error('Usage: generate-article.js <topics-file.json> <analysis-file.json>');
+    logger.error('Usage: generate-article.js <topics-file.json> <analysis-file.json>');
     process.exit(1);
   }
 
@@ -335,7 +338,7 @@ async function main() {
     const commitAnalysis = JSON.parse(fs.readFileSync(analysisFile, 'utf8'));
 
     if (topics.length === 0) {
-      console.log('⚠️  No topics to generate articles for.');
+      logger.info('⚠️  No topics to generate articles for.');
       process.exit(0);
     }
 
@@ -345,7 +348,7 @@ async function main() {
     // サマリーを表示
     generateSummary(generatedFiles);
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    logger.error('❌ Error:', error.message);
     process.exit(1);
   }
 }
@@ -358,5 +361,5 @@ if (require.main === module) {
 module.exports = {
   generateArticle,
   generateMultipleArticles,
-  generateArticlesInteractive,
+  generateArticlesInteractive
 };

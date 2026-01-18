@@ -7,6 +7,9 @@
 
 const fs = require('fs');
 const path = require('path');
+const { Logger } = require('@claude-skills/utils');
+
+const logger = new Logger('code-quality-suite:report-generator');
 
 /**
  * 統合レポートを生成
@@ -16,7 +19,7 @@ const path = require('path');
  * @returns {string} Markdownレポート
  */
 function generateReport(qualityResults, securityResults, options = {}) {
-  const { includeDetails = true, format = 'markdown' } = options;
+  const { includeDetails = true, format: _format = 'markdown' } = options;
 
   // 総合スコアを計算
   const overallScore = calculateOverallScore(qualityResults, securityResults);
@@ -35,8 +38,12 @@ function generateReport(qualityResults, securityResults, options = {}) {
   sections.push('');
   sections.push('| Category | Score | Rating | Issues |');
   sections.push('|----------|-------|--------|--------|');
-  sections.push(`| Code Quality | ${qualityResults.summary.score}/100 | ${qualityResults.summary.rating} | ${qualityResults.summary.totalIssues} |`);
-  sections.push(`| Security | ${securityResults.summary.score}/100 | ${securityResults.summary.rating} | ${securityResults.summary.totalIssues} |`);
+  sections.push(
+    `| Code Quality | ${qualityResults.summary.score}/100 | ${qualityResults.summary.rating} | ${qualityResults.summary.totalIssues} |`
+  );
+  sections.push(
+    `| Security | ${securityResults.summary.score}/100 | ${securityResults.summary.rating} | ${securityResults.summary.totalIssues} |`
+  );
   sections.push('');
 
   // コード品質セクション
@@ -118,7 +125,7 @@ function generateReport(qualityResults, securityResults, options = {}) {
   sections.push('');
   const actions = generateActionItems(qualityResults, securityResults);
   if (actions.length > 0) {
-    actions.forEach((action, index) => {
+    actions.forEach((action, _index) => {
       sections.push(`- [ ] ${action}`);
     });
   } else {
@@ -146,8 +153,7 @@ function calculateOverallScore(qualityResults, securityResults) {
   const securityWeight = 0.5;
 
   const score = Math.round(
-    qualityResults.summary.score * qualityWeight +
-    securityResults.summary.score * securityWeight
+    qualityResults.summary.score * qualityWeight + securityResults.summary.score * securityWeight
   );
 
   let rating = 'excellent';
@@ -157,7 +163,7 @@ function calculateOverallScore(qualityResults, securityResults) {
 
   return {
     score,
-    rating,
+    rating
   };
 }
 
@@ -174,7 +180,7 @@ function generateRecommendations(qualityResults, securityResults) {
   if (securityResults.summary.criticalIssues > 0) {
     recommendations.push({
       priority: 'critical',
-      description: `Fix ${securityResults.summary.criticalIssues} critical security vulnerabilities immediately`,
+      description: `Fix ${securityResults.summary.criticalIssues} critical security vulnerabilities immediately`
     });
   }
 
@@ -182,14 +188,14 @@ function generateRecommendations(qualityResults, securityResults) {
   if (qualityResults.linting && qualityResults.linting.errorCount > 0) {
     recommendations.push({
       priority: 'high',
-      description: `Resolve ${qualityResults.linting.errorCount} ESLint errors`,
+      description: `Resolve ${qualityResults.linting.errorCount} ESLint errors`
     });
   }
 
   if (qualityResults.typescript && qualityResults.typescript.errorCount > 0) {
     recommendations.push({
       priority: 'high',
-      description: `Fix ${qualityResults.typescript.errorCount} TypeScript type errors`,
+      description: `Fix ${qualityResults.typescript.errorCount} TypeScript type errors`
     });
   }
 
@@ -197,7 +203,7 @@ function generateRecommendations(qualityResults, securityResults) {
   if (securityResults.summary.highIssues > 0) {
     recommendations.push({
       priority: 'medium',
-      description: `Address ${securityResults.summary.highIssues} high-priority security issues`,
+      description: `Address ${securityResults.summary.highIssues} high-priority security issues`
     });
   }
 
@@ -205,7 +211,7 @@ function generateRecommendations(qualityResults, securityResults) {
   if (securityResults.secrets.count > 0) {
     recommendations.push({
       priority: 'high',
-      description: `Review and remove ${securityResults.secrets.count} potential secrets from codebase`,
+      description: `Review and remove ${securityResults.secrets.count} potential secrets from codebase`
     });
   }
 
@@ -213,7 +219,7 @@ function generateRecommendations(qualityResults, securityResults) {
   if (qualityResults.linting && qualityResults.linting.warningCount > 10) {
     recommendations.push({
       priority: 'low',
-      description: `Address ${qualityResults.linting.warningCount} ESLint warnings to improve code quality`,
+      description: `Address ${qualityResults.linting.warningCount} ESLint warnings to improve code quality`
     });
   }
 
@@ -233,19 +239,19 @@ function generateActionItems(qualityResults, securityResults) {
   const actions = [];
 
   if (qualityResults.linting && qualityResults.linting.errorCount > 0) {
-    actions.push(`Run \`npm run lint -- --fix\` to auto-fix ESLint issues`);
+    actions.push('Run `npm run lint -- --fix` to auto-fix ESLint issues');
   }
 
   if (securityResults.dependencies && securityResults.dependencies.totalVulnerabilities > 0) {
-    actions.push(`Run \`npm audit fix\` to update vulnerable dependencies`);
+    actions.push('Run `npm audit fix` to update vulnerable dependencies');
   }
 
   if (securityResults.secrets.count > 0) {
-    actions.push(`Review detected secrets and move to environment variables`);
+    actions.push('Review detected secrets and move to environment variables');
   }
 
   if (qualityResults.typescript && qualityResults.typescript.errorCount > 0) {
-    actions.push(`Fix TypeScript compilation errors`);
+    actions.push('Fix TypeScript compilation errors');
   }
 
   return actions;
@@ -263,7 +269,7 @@ function saveReport(report, outputPath) {
   }
 
   fs.writeFileSync(outputPath, report);
-  console.log(`\n✓ Report saved to: ${outputPath}\n`);
+  logger.info(`\n✓ Report saved to: ${outputPath}\n`);
 }
 
 /**
@@ -274,8 +280,8 @@ async function main() {
 
   // 最新の品質とセキュリティレポートを読み込む
   if (!fs.existsSync(reportsDir)) {
-    console.error('❌ Error: No reports directory found');
-    console.log('Run quality-checker.js and security-scanner.js first');
+    logger.error('❌ Error: No reports directory found');
+    logger.info('Run quality-checker.js and security-scanner.js first');
     process.exit(1);
   }
 
@@ -284,17 +290,13 @@ async function main() {
   const securityFile = files.find((f) => f.startsWith('security-scan-'));
 
   if (!qualityFile || !securityFile) {
-    console.error('❌ Error: Missing quality or security reports');
-    console.log('Run quality-checker.js and security-scanner.js first');
+    logger.error('❌ Error: Missing quality or security reports');
+    logger.info('Run quality-checker.js and security-scanner.js first');
     process.exit(1);
   }
 
-  const qualityResults = JSON.parse(
-    fs.readFileSync(path.join(reportsDir, qualityFile), 'utf8')
-  );
-  const securityResults = JSON.parse(
-    fs.readFileSync(path.join(reportsDir, securityFile), 'utf8')
-  );
+  const qualityResults = JSON.parse(fs.readFileSync(path.join(reportsDir, qualityFile), 'utf8'));
+  const securityResults = JSON.parse(fs.readFileSync(path.join(reportsDir, securityFile), 'utf8'));
 
   // レポートを生成
   const report = generateReport(qualityResults, securityResults);
@@ -304,11 +306,11 @@ async function main() {
   const outputPath = path.join(reportsDir, `code-quality-suite-${timestamp}.md`);
   saveReport(report, outputPath);
 
-  console.log('📊 Code Quality Suite Report Summary:');
+  logger.info('📊 Code Quality Suite Report Summary:');
   const overallScore = calculateOverallScore(qualityResults, securityResults);
-  console.log(`   Overall Score: ${overallScore.score}/100 (${overallScore.rating})`);
-  console.log(`   Quality: ${qualityResults.summary.score}/100`);
-  console.log(`   Security: ${securityResults.summary.score}/100\n`);
+  logger.info(`   Overall Score: ${overallScore.score}/100 (${overallScore.rating})`);
+  logger.info(`   Quality: ${qualityResults.summary.score}/100`);
+  logger.info(`   Security: ${securityResults.summary.score}/100\n`);
 }
 
 // スクリプトとして実行された場合

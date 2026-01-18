@@ -1,6 +1,8 @@
 ---
 name: e2e-test-generator
-description: Generate end-to-end tests automatically from user flows with Playwright/Cypress
+description:
+  Generate end-to-end tests automatically from user flows with
+  Playwright/Cypress
 version: 1.0.0
 author: Claude Code Toolkit
 license: MIT
@@ -20,8 +22,7 @@ requires:
 
 ## Purpose
 
-このスキルは、ユーザーフローからE2Eテストを自動生成します。
-Playwright/Cypress対応、ページオブジェクトパターン適用、視覚的回帰テスト、CI/CD統合をサポートします。
+このスキルは、ユーザーフローからE2Eテストを自動生成します。Playwright/Cypress対応、ページオブジェクトパターン適用、視覚的回帰テスト、CI/CD統合をサポートします。
 
 ## When to Use
 
@@ -66,31 +67,37 @@ examples/
 #### 1.1 ユーザーフローの記述
 
 **Markdown形式:**
+
 ```markdown
 # User Flow: Login
 
 ## Prerequisites
+
 - User exists with email: test@example.com
 - Password: Test123!
 
 ## Steps
 
 ### Step 1: Navigate to login page
+
 - URL: https://app.example.com/login
 - Expected: Login form is visible
 
 ### Step 2: Enter credentials
+
 - Action: Fill email field with "test@example.com"
 - Action: Fill password field with "Test123!"
 - Selector: input[name="email"]
 - Selector: input[type="password"]
 
 ### Step 3: Submit form
+
 - Action: Click login button
 - Selector: button[type="submit"]
 - Expected: Redirected to /dashboard
 
 ### Step 4: Verify logged in
+
 - Expected: User menu is visible
 - Expected: Welcome message contains "test@example.com"
 - Selector: [data-testid="user-menu"]
@@ -146,6 +153,7 @@ agent e2e-test-generator generate \
 ```
 
 **生成されたテスト:**
+
 ```typescript
 // tests/e2e/user-login.spec.ts
 import { test, expect } from '@playwright/test';
@@ -176,7 +184,9 @@ test.describe('User Login', () => {
     // Step 4: Verify logged in
     await expect(page).toHaveURL(/.*dashboard/);
     await expect(dashboardPage.userMenu).toBeVisible();
-    await expect(dashboardPage.welcomeMessage).toContainText('test@example.com');
+    await expect(dashboardPage.welcomeMessage).toContainText(
+      'test@example.com'
+    );
   });
 
   test('should show error with invalid credentials', async ({ page }) => {
@@ -200,6 +210,7 @@ test.describe('User Login', () => {
 ```
 
 **Page Object:**
+
 ```typescript
 // tests/e2e/pages/LoginPage.ts
 import { Page, Locator } from '@playwright/test';
@@ -260,6 +271,7 @@ agent e2e-test-generator generate \
 ```
 
 **生成されたCypressテスト:**
+
 ```javascript
 // cypress/e2e/user-login.cy.js
 import { LoginPage } from '../pages/LoginPage';
@@ -303,17 +315,26 @@ describe('User Login', () => {
 export const testUsers = {
   valid: [
     { email: 'test@example.com', password: 'Test123!', role: 'user' },
-    { email: 'admin@example.com', password: 'Admin123!', role: 'admin' },
+    { email: 'admin@example.com', password: 'Admin123!', role: 'admin' }
   ],
   invalid: [
-    { email: 'invalid@example.com', password: 'wrong', expectedError: 'Invalid credentials' },
+    {
+      email: 'invalid@example.com',
+      password: 'wrong',
+      expectedError: 'Invalid credentials'
+    },
     { email: '', password: 'Test123!', expectedError: 'Email is required' },
-    { email: 'test@example.com', password: '', expectedError: 'Password is required' },
+    {
+      email: 'test@example.com',
+      password: '',
+      expectedError: 'Password is required'
+    }
   ]
 };
 ```
 
 **データ駆動テスト:**
+
 ```typescript
 import { testUsers } from '../data/users';
 
@@ -367,7 +388,7 @@ test.describe('Login Page Visual Regression', () => {
     const viewports = [
       { width: 375, height: 667, name: 'mobile' },
       { width: 768, height: 1024, name: 'tablet' },
-      { width: 1920, height: 1080, name: 'desktop' },
+      { width: 1920, height: 1080, name: 'desktop' }
     ];
 
     for (const viewport of viewports) {
@@ -447,35 +468,35 @@ export default defineConfig({
   reporter: [
     ['html'],
     ['json', { outputFile: 'test-results/results.json' }],
-    ['junit', { outputFile: 'test-results/junit.xml' }],
+    ['junit', { outputFile: 'test-results/junit.xml' }]
   ],
   use: {
     baseURL: process.env.BASE_URL || 'http://localhost:3000',
     trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
+    screenshot: 'only-on-failure'
   },
   projects: [
     {
       name: 'chromium',
-      use: { browserName: 'chromium' },
+      use: { browserName: 'chromium' }
     },
     {
       name: 'firefox',
-      use: { browserName: 'firefox' },
+      use: { browserName: 'firefox' }
     },
     {
       name: 'webkit',
-      use: { browserName: 'webkit' },
+      use: { browserName: 'webkit' }
     },
     {
       name: 'mobile-chrome',
       use: {
         browserName: 'chromium',
         viewport: { width: 375, height: 667 },
-        isMobile: true,
-      },
-    },
-  ],
+        isMobile: true
+      }
+    }
+  ]
 });
 ```
 

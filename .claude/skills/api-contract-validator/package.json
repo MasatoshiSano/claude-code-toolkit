@@ -1,0 +1,47 @@
+{
+  "name": "@claude-code-toolkit/api-contract-validator",
+  "version": "1.0.0",
+  "description": "API contract validation with OpenAPI/Swagger support",
+  "main": "scripts/index.js",
+  "type": "module",
+  "scripts": {
+    "test": "jest",
+    "generate": "node scripts/generate-openapi.js",
+    "validate": "node scripts/validate-contract.js",
+    "client": "node scripts/generate-client.js"
+  },
+  "keywords": [
+    "api",
+    "openapi",
+    "swagger",
+    "contract",
+    "validation"
+  ],
+  "author": "Claude Code Toolkit",
+  "license": "MIT",
+  "dependencies": {
+    "openapi-typescript": "^6.7.0",
+    "swagger-parser": "^10.0.0",
+    "@apidevtools/swagger-cli": "^4.0.0",
+    "@claude-code-toolkit/utils": "^1.0.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ],
+    "coverageDirectory": "coverage"
+  },
+  "homepage": "https://github.com/claude-code-toolkit/claude-code-toolkit#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/claude-code-toolkit/claude-code-toolkit.git",
+    "directory": ".claude/skills/api-contract-validator"
+  },
+  "bugs": {
+    "url": "https://github.com/claude-code-toolkit/claude-code-toolkit/issues"
+  }
+}

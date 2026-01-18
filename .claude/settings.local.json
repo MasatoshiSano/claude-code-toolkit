@@ -49,7 +49,11 @@
       "Bash(terraform:*)",
       "Bash(playwright:*)",
       "Bash(cypress:*)",
-      "Bash(lighthouse:*)"
+      "Bash(lighthouse:*)",
+      "Bash(node -e \"require\\(''./.claude/skills/aws-cost-optimizer/scripts/cost-analyzer.js''\\)\")",
+      "Bash(for dir in .claude/skills/*/)",
+      "Bash(do [ -f \"$dir/package.json\" ])",
+      "Bash(done)"
     ]
   }
 }

@@ -1,0 +1,35 @@
+{
+  "name": "@claude-code-toolkit/technical-blog-generator",
+  "version": "1.0.0",
+  "description": "Generate beginner-friendly technical blog articles from code commits with automatic topic detection",
+  "type": "module",
+  "main": "scripts/analyze-commit.js",
+  "scripts": {
+    "analyze": "node scripts/analyze-commit.js",
+    "detect-topics": "node scripts/detect-blog-topics.js",
+    "generate": "node scripts/generate-article.js",
+    "test": "jest"
+  },
+  "keywords": [
+    "blog",
+    "documentation",
+    "technical-writing",
+    "commit-analysis",
+    "article-generation"
+  ],
+  "author": "Claude Code Toolkit",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "dependencies": {
+    "@claude-code-toolkit/utils": "*",
+    "simple-git": "^3.22.0",
+    "marked": "^11.1.1",
+    "chalk": "^5.3.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "@types/node": "^20.11.0"
+  }
+}

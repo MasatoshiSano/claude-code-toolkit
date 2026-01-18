@@ -5,9 +5,12 @@
  * ドキュメントの改訂履歴を自動追加
  */
 
+const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const { Logger } = require('@claude-skills/utils');
+
+const logger = new Logger('spec-driven-development:generate-revision');
 
 /**
  * 改訂履歴を生成して追加
@@ -16,13 +19,9 @@ const { execSync } = require('child_process');
  * @returns {string} 更新後のドキュメント
  */
 function generateRevision(filepath, options = {}) {
-  const {
-    description = null,
-    autoDetect = true,
-    author = null,
-  } = options;
+  const { description = null, autoDetect = true, author = null } = options;
 
-  console.log(`\n📝 Generating revision for ${path.basename(filepath)}...\n`);
+  logger.info(`\n📝 Generating revision for ${path.basename(filepath)}...\n`);
 
   // ドキュメントを読み込む
   if (!fs.existsSync(filepath)) {
@@ -67,7 +66,7 @@ function createRevision(filepath, description, autoDetect, author) {
     date,
     description: desc,
     author: authorName,
-    filepath: path.basename(filepath),
+    filepath: path.basename(filepath)
   };
 }
 
@@ -93,16 +92,13 @@ function detectChanges(filepath) {
     // 前回のコミットとの差分を取得
     const diff = execSync(`git diff HEAD -- "${filepath}"`, {
       encoding: 'utf8',
-      maxBuffer: 10 * 1024 * 1024,
+      maxBuffer: 10 * 1024 * 1024
     }).trim();
 
     if (!diff) {
       // 変更がない場合はコミット履歴から最新のメッセージを取得
       try {
-        const lastCommitMessage = execSync(
-          `git log -1 --pretty=%s -- "${filepath}"`,
-          { encoding: 'utf8' }
-        ).trim();
+        const lastCommitMessage = execSync(`git log -1 --pretty=%s -- "${filepath}"`, { encoding: 'utf8' }).trim();
 
         if (lastCommitMessage) {
           return `前回更新: ${lastCommitMessage}`;
@@ -163,12 +159,12 @@ function analyzeDiff(diff) {
   const addedSections = [];
   const deletedSections = [];
 
-  let currentSection = null;
+  let _currentSection = null;
 
   lines.forEach((line) => {
     if (line.startsWith('@@')) {
       // セクションヘッダー
-      currentSection = line;
+      _currentSection = line;
     } else if (line.startsWith('+') && !line.startsWith('+++')) {
       additions++;
 
@@ -206,7 +202,7 @@ function analyzeDiff(diff) {
     deletions,
     addedSections,
     deletedSections,
-    description,
+    description
   };
 }
 
@@ -235,7 +231,7 @@ function addRevisionToDocument(content, revision) {
   // 改訂履歴セクションを探す
   let revisionSectionIndex = -1;
   let revisionContentStart = -1;
-  let nextSectionIndex = -1;
+  let _nextSectionIndex = -1;
 
   for (let i = 0; i < lines.length; i++) {
     if (lines[i].trim() === '## 改訂履歴') {
@@ -245,7 +241,7 @@ function addRevisionToDocument(content, revision) {
       // 次のセクションを探す
       for (let j = i + 1; j < lines.length; j++) {
         if (lines[j].startsWith('## ')) {
-          nextSectionIndex = j;
+          _nextSectionIndex = j;
           break;
         }
       }
@@ -260,13 +256,7 @@ function addRevisionToDocument(content, revision) {
     // 改訂履歴セクションが存在しない場合、作成する
     const headerEndIndex = findHeaderEnd(lines);
 
-    const newSection = [
-      '',
-      '## 改訂履歴',
-      '',
-      newEntry,
-      '',
-    ];
+    const newSection = ['', '## 改訂履歴', '', newEntry, ''];
 
     lines.splice(headerEndIndex + 1, 0, ...newSection);
   } else {
@@ -312,7 +302,7 @@ function findHeaderEnd(lines) {
  */
 function saveRevision(filepath, content) {
   fs.writeFileSync(filepath, content, 'utf8');
-  console.log(`✅ Revision added to: ${filepath}\n`);
+  logger.info(`✅ Revision added to: ${filepath}\n`);
 }
 
 /**
@@ -321,7 +311,7 @@ function saveRevision(filepath, content) {
  * @param {Object} options - オプション
  */
 function generateRevisionsForAll(filepaths, options = {}) {
-  console.log(`\n📚 Generating revisions for ${filepaths.length} document(s)...\n`);
+  logger.info(`\n📚 Generating revisions for ${filepaths.length} document(s)...\n`);
 
   const results = [];
 
@@ -332,22 +322,22 @@ function generateRevisionsForAll(filepaths, options = {}) {
 
       results.push({
         filepath,
-        success: true,
+        success: true
       });
     } catch (error) {
-      console.error(`❌ Error processing ${filepath}: ${error.message}`);
+      logger.error(`❌ Error processing ${filepath}: ${error.message}`);
 
       results.push({
         filepath,
         success: false,
-        error: error.message,
+        error: error.message
       });
     }
   });
 
   // サマリー
   const successful = results.filter((r) => r.success).length;
-  console.log(`\n✅ Revisions added: ${successful}/${filepaths.length}\n`);
+  logger.info(`\n✅ Revisions added: ${successful}/${filepaths.length}\n`);
 
   return results;
 }
@@ -359,19 +349,19 @@ async function main() {
   const args = process.argv.slice(2);
 
   if (args.length === 0) {
-    console.error('Usage: generate-revision.js <file1> [file2] [file3] [...] [--description="..."]');
-    console.error('');
-    console.error('Examples:');
-    console.error('  generate-revision.js .tmp/requirements.md');
-    console.error('  generate-revision.js .tmp/*.md');
-    console.error('  generate-revision.js .tmp/design.md --description="コンポーネント追加"');
+    logger.error('Usage: generate-revision.js <file1> [file2] [file3] [...] [--description="..."]');
+    logger.error('');
+    logger.error('Examples:');
+    logger.error('  generate-revision.js .tmp/requirements.md');
+    logger.error('  generate-revision.js .tmp/*.md');
+    logger.error('  generate-revision.js .tmp/design.md --description="コンポーネント追加"');
     process.exit(1);
   }
 
   const options = {
     autoDetect: true,
     description: null,
-    author: null,
+    author: null
   };
 
   const filepaths = [];
@@ -389,7 +379,7 @@ async function main() {
   });
 
   if (filepaths.length === 0) {
-    console.error('❌ No files specified');
+    logger.error('❌ No files specified');
     process.exit(1);
   }
 
@@ -404,7 +394,7 @@ async function main() {
 
         if (fs.existsSync(dir)) {
           const files = fs.readdirSync(dir);
-          const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
+          const regex = new RegExp(`^${pattern.replace(/\*/g, '.*')}$`);
 
           files.forEach((file) => {
             if (regex.test(file)) {
@@ -418,14 +408,14 @@ async function main() {
     });
 
     if (expandedPaths.length === 0) {
-      console.error('❌ No matching files found');
+      logger.error('❌ No matching files found');
       process.exit(1);
     }
 
     // 改訂履歴を生成
     generateRevisionsForAll(expandedPaths, options);
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    logger.error('❌ Error:', error.message);
     process.exit(1);
   }
 }
@@ -439,5 +429,5 @@ module.exports = {
   generateRevision,
   generateRevisionsForAll,
   createRevision,
-  detectChanges,
+  detectChanges
 };

@@ -54,6 +54,7 @@ Articles are generated in `_docs/blog/` directory.
 ## Article Structure
 
 ### Beginner Articles
+
 - Problem explanation
 - Step-by-step implementation
 - Before/After comparison
@@ -61,12 +62,14 @@ Articles are generated in `_docs/blog/` directory.
 - Next steps
 
 ### Intermediate Articles
+
 - Architecture decisions
 - Performance benchmarks
 - Best practices and anti-patterns
 - Testing strategies
 
 ### Advanced Articles
+
 - Deep technical analysis
 - Algorithm complexity
 - Production deployment
@@ -75,9 +78,11 @@ Articles are generated in `_docs/blog/` directory.
 ## Output
 
 Articles are saved to `_docs/blog/`:
+
 - `YYYY-MM-DD-article-title.md` - Draft articles ready for editing
 
 Reports are saved to `reports/`:
+
 - `commit-analysis-YYYY-MM-DD.json` - Commit analysis data
 - `blog-topics-YYYY-MM-DD.json` - Detected topics
 
@@ -88,10 +93,12 @@ See [SKILL.md](SKILL.md) for detailed specifications and instructions.
 ## Troubleshooting
 
 **Error: Not a git repository**
+
 - Ensure you're in a git repository
 - Run `git init` if needed
 
 **Error: No blog-worthy topics detected**
+
 - Commit may be too small or trivial
 - Try analyzing multiple commits
 

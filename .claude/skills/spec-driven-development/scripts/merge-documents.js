@@ -7,6 +7,9 @@
 
 const fs = require('fs');
 const path = require('path');
+const { Logger } = require('@claude-skills/utils');
+
+const logger = new Logger('spec-driven-development:merge-documents');
 
 /**
  * ドキュメントをマージ
@@ -16,18 +19,18 @@ const path = require('path');
  * @returns {string} マージ後の内容
  */
 function mergeDocument(docType, newContent, options = {}) {
-  const { docPath = '.tmp', force = false } = options;
+  const { docPath = '.tmp', force: _force = false } = options;
 
   const filename = `${docType}.md`;
   const filepath = path.join(docPath, filename);
 
-  console.log(`\n📄 Merging ${docType}.md...\n`);
+  logger.info(`\n📄 Merging ${docType}.md...\n`);
 
   // 既存ドキュメントを読み込む
   const existingContent = readExistingDocument(filepath);
 
   if (!existingContent) {
-    console.log(`No existing ${filename} found. Creating new document.`);
+    logger.info(`No existing ${filename} found. Creating new document.`);
     return newContent;
   }
 
@@ -70,23 +73,17 @@ function readExistingDocument(filepath) {
  * @returns {string} マージ後の内容
  */
 function mergeRequirements(existing, newContent) {
-  console.log('Merging requirements...');
+  logger.info('Merging requirements...');
 
   // セクションを抽出
   const existingSections = extractSections(existing);
   const newSections = extractSections(newContent);
 
   // 機能要件をマージ
-  const mergedFunctional = mergeFunctionalRequirements(
-    existingSections['機能要件'],
-    newSections['機能要件']
-  );
+  const mergedFunctional = mergeFunctionalRequirements(existingSections['機能要件'], newSections['機能要件']);
 
   // 非機能要件をマージ
-  const mergedNonFunctional = mergeNonFunctionalRequirements(
-    existingSections['非機能要件'],
-    newSections['非機能要件']
-  );
+  const mergedNonFunctional = mergeNonFunctionalRequirements(existingSections['非機能要件'], newSections['非機能要件']);
 
   // ヘッダーと改訂履歴を保持
   const header = extractHeader(existing);
@@ -111,8 +108,10 @@ function mergeRequirements(existing, newContent) {
     '',
     existingSections['制約条件'] || '',
     existingSections['成功基準'] || '',
-    existingSections['リスク'] || '',
-  ].filter(Boolean).join('\n');
+    existingSections['リスク'] || ''
+  ]
+    .filter(Boolean)
+    .join('\n');
 
   return merged;
 }
@@ -124,22 +123,16 @@ function mergeRequirements(existing, newContent) {
  * @returns {string} マージ後の内容
  */
 function mergeDesign(existing, newContent) {
-  console.log('Merging design...');
+  logger.info('Merging design...');
 
   const existingSections = extractSections(existing);
   const newSections = extractSections(newContent);
 
   // コンポーネント一覧をマージ
-  const mergedComponents = mergeComponents(
-    existingSections['コンポーネント一覧'],
-    newSections['コンポーネント一覧']
-  );
+  const mergedComponents = mergeComponents(existingSections['コンポーネント一覧'], newSections['コンポーネント一覧']);
 
   // データフローをマージ
-  const mergedDataFlow = mergeDataFlow(
-    existingSections['データフロー'],
-    newSections['データフロー']
-  );
+  const mergedDataFlow = mergeDataFlow(existingSections['データフロー'], newSections['データフロー']);
 
   // ヘッダーと改訂履歴を保持
   const header = extractHeader(existing);
@@ -169,8 +162,10 @@ function mergeDesign(existing, newContent) {
     existingSections['API設計'] || newSections['API設計'] || '',
     existingSections['データベース設計'] || newSections['データベース設計'] || '',
     existingSections['エラーハンドリング'] || newSections['エラーハンドリング'] || '',
-    existingSections['セキュリティ設計'] || newSections['セキュリティ設計'] || '',
-  ].filter(Boolean).join('\n');
+    existingSections['セキュリティ設計'] || newSections['セキュリティ設計'] || ''
+  ]
+    .filter(Boolean)
+    .join('\n');
 
   return merged;
 }
@@ -182,7 +177,7 @@ function mergeDesign(existing, newContent) {
  * @returns {string} マージ後の内容
  */
 function mergeTasks(existing, newContent) {
-  console.log('Merging tasks...');
+  logger.info('Merging tasks...');
 
   const existingSections = extractSections(existing);
   const newSections = extractSections(newContent);
@@ -217,8 +212,10 @@ function mergeTasks(existing, newContent) {
     '',
     completedTasks,
     '',
-    existingSections['時間見積もり'] || newSections['時間見積もり'] || '',
-  ].filter(Boolean).join('\n');
+    existingSections['時間見積もり'] || newSections['時間見積もり'] || ''
+  ]
+    .filter(Boolean)
+    .join('\n');
 
   return merged;
 }
@@ -389,9 +386,7 @@ function mergeInProgressTasks(existing, newTasks) {
  */
 function extractBulletPoints(content) {
   const lines = content.split('\n');
-  return lines
-    .filter((line) => line.trim().startsWith('-'))
-    .map((line) => line.trim().substring(1).trim());
+  return lines.filter((line) => line.trim().startsWith('-')).map((line) => line.trim().substring(1).trim());
 }
 
 /**
@@ -401,9 +396,7 @@ function extractBulletPoints(content) {
  */
 function extractComponentNames(content) {
   const lines = content.split('\n');
-  return lines
-    .filter((line) => line.startsWith('### '))
-    .map((line) => line.substring(4).trim());
+  return lines.filter((line) => line.startsWith('### ')).map((line) => line.substring(4).trim());
 }
 
 /**
@@ -460,7 +453,7 @@ function saveDocument(docType, content, options = {}) {
   }
 
   fs.writeFileSync(filepath, content, 'utf8');
-  console.log(`✅ Merged document saved to: ${filepath}\n`);
+  logger.info(`✅ Merged document saved to: ${filepath}\n`);
 }
 
 /**
@@ -470,8 +463,8 @@ async function main() {
   const args = process.argv.slice(2);
 
   if (args.length < 2) {
-    console.error('Usage: merge-documents.js <doc-type> <new-content-file>');
-    console.error('  doc-type: requirements, design, or tasks');
+    logger.error('Usage: merge-documents.js <doc-type> <new-content-file>');
+    logger.error('  doc-type: requirements, design, or tasks');
     process.exit(1);
   }
 
@@ -492,9 +485,9 @@ async function main() {
     // 保存
     saveDocument(docType, merged);
 
-    console.log('✅ Document merge completed successfully\n');
+    logger.info('✅ Document merge completed successfully\n');
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    logger.error('❌ Error:', error.message);
     process.exit(1);
   }
 }
@@ -508,5 +501,5 @@ module.exports = {
   mergeDocument,
   mergeRequirements,
   mergeDesign,
-  mergeTasks,
+  mergeTasks
 };

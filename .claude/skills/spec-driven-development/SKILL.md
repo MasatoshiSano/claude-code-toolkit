@@ -1,6 +1,8 @@
 ---
 name: spec-driven-development
-description: Complete specification-driven development workflow (Requirements → Design → Tasks)
+description:
+  Complete specification-driven development workflow (Requirements → Design →
+  Tasks)
 version: 1.0.0
 author: Claude Code Toolkit
 license: MIT
@@ -18,17 +20,19 @@ requires:
 
 ## 実装状況
 
-**ステータス**: ✅ Phase 1強化完了
-**実装日**: 2026-01-17
+**ステータス**: ✅ Phase 1強化完了 **実装日**: 2026-01-17
 **動作保証**: 基本機能 + 強化機能（ドキュメントマージ、整合性検証、改訂履歴）
 **実装済み機能**:
+
 - ✅ テンプレート3種（requirements/design/tasks）
-- ✅ 既存ドキュメントマージ（merge-documents.js）- requirements/design/tasksの自動マージ
+- ✅ 既存ドキュメントマージ（merge-documents.js）-
+  requirements/design/tasksの自動マージ
 - ✅ 整合性検証（validate-consistency.js）- コンポーネント名、依存関係、カバレッジチェック
 - ✅ 改訂履歴自動追加（generate-revision.js）- Git連携、変更検出
 - ✅ `/spec`、`/requirements`、`/design`、`/tasks`コマンドと統合
 
 **強化された機能**:
+
 - ✅ 既存ドキュメントとの自動マージ（重複排除、セクション統合）
 - ✅ コンポーネント名の一貫性検証
 - ✅ 要件カバレッジ検証（全要件が設計でカバーされているか）
@@ -37,16 +41,19 @@ requires:
 - ✅ Git diffベースの改訂履歴自動生成
 
 **未実装機能**（Phase 2以降で実装予定）:
+
 - 🚧 要件テンプレートのカスタマイズ
 - 🚧 AIによる要件の自動分類
 - 🚧 タスク時間見積もりの自動調整
 - 🚧 複数プロジェクト間での仕様共有
 
 **動作要件**:
+
 - Node.js >= 16
 - Git（改訂履歴自動生成に使用、オプション）
 
 **コマンドとの統合**:
+
 - `/spec`: 3段階ワークフロー実行時に自動マージと検証を実施
 - `/requirements`: 既存requirements.mdと自動マージ、改訂履歴追加
 - `/design`: 既存design.mdと自動マージ、コンポーネント整合性検証
@@ -54,8 +61,7 @@ requires:
 
 ## Purpose
 
-このスキルは、要件定義→詳細設計→タスク分解の3段階のワークフローを統合し、
-構造化された仕様駆動開発を実現します。
+このスキルは、要件定義→詳細設計→タスク分解の3段階のワークフローを統合し、構造化された仕様駆動開発を実現します。
 
 ## When to Use
 
@@ -84,11 +90,14 @@ scripts/
 ### Stage 1: Requirements Analysis
 
 #### 1.1 環境準備
+
 - `.tmp/` ディレクトリを作成（存在しない場合）
 - 既存の`requirements.md`の有無を確認
 
 #### 1.2 要件抽出
+
 ユーザーの要求（`$ARGUMENTS`）から以下を抽出：
+
 - **コア課題**: 解決すべき本質的な問題
 - **暗黙的要件**: 明示されていないが必要な要件
 - **エッジケース**: 境界条件や例外ケース
@@ -118,8 +127,8 @@ scripts/
 7. **今後の検討事項**
 8. **改訂履歴**
 
-**更新の場合:**
-`scripts/merge-documents.js`を使用：
+**更新の場合:** `scripts/merge-documents.js`を使用：
+
 - 既存の`requirements.md`を読み込み
 - 新機能を「2.1 必須機能」に追加（日付付き）
 - 目的セクションを必要に応じて更新
@@ -128,7 +137,9 @@ scripts/
 - 改訂履歴に追記
 
 #### 1.4 ユーザー承認
+
 要件定義書を提示し、以下を確認：
+
 - 要件の理解が正しいか
 - 不足している要件はないか
 - 次のステージ（設計）への進行許可
@@ -136,10 +147,12 @@ scripts/
 ### Stage 2: Design Specification
 
 #### 2.1 前提条件確認
+
 - `.tmp/requirements.md`の存在を確認
 - 要件定義書を読み込み、理解
 
 #### 2.2 既存設計確認
+
 - `.tmp/design.md`の有無を確認
 - 既存の場合、アーキテクチャへの影響を分析
 
@@ -174,8 +187,8 @@ scripts/
 10. **実装上の注意事項**
 11. **改訂履歴**
 
-**更新の場合:**
-`scripts/merge-documents.js`を使用：
+**更新の場合:** `scripts/merge-documents.js`を使用：
+
 - システム構成図を更新（新コンポーネント反映）
 - コンポーネント一覧に新規追加（日付付き）
 - 各コンポーネントの詳細設計を追記
@@ -185,7 +198,9 @@ scripts/
 - 改訂履歴に追記
 
 #### 2.4 ユーザー承認
+
 設計書を提示し、以下を確認：
+
 - 技術的なフィードバック
 - アーキテクチャの承認
 - 次のステージ（タスク分解）への進行許可
@@ -193,17 +208,21 @@ scripts/
 ### Stage 3: Task Breakdown
 
 #### 3.1 前提条件確認
+
 - `.tmp/requirements.md`と`.tmp/design.md`の存在を確認
 - 両方を読み込み、理解
 
 #### 3.2 タスク抽出
+
 設計書から実装タスクを抽出：
+
 - Phase 1: 準備・調査
 - Phase 2: 実装
 - Phase 3: 検証・テスト
 - Phase 4: 仕上げ
 
 各タスクには以下を含む：
+
 - 具体的な作業項目（チェックリスト）
 - 完了条件（明確で測定可能）
 - 依存関係
@@ -211,8 +230,7 @@ scripts/
 
 #### 3.3 タスクリスト生成
 
-**新規作成の場合:**
-`templates/tasks-template.md`を使用：
+**新規作成の場合:** `templates/tasks-template.md`を使用：
 
 ```markdown
 # タスクリスト
@@ -222,31 +240,39 @@ scripts/
 ### [機能名] - YYYY-MM-DD
 
 #### 概要
+
 - 総タスク数: [数]
 - 推定作業時間: [時間/日数]
 - 優先度: [高/中/低]
 
 #### タスク一覧
+
 [Phaseごとにタスクを整理]
 
 #### 実装順序
+
 [依存関係を考慮した実行順序]
 
 #### リスクと対策
+
 [特定されたリスク]
 
 ## ✅ 完了した機能
+
 (完了した機能はここに移動)
 ```
 
 **更新の場合:**
+
 - 既存の`tasks.md`を読み込み
 - 「🚧 進行中の機能」セクションに新機能を追加
 - 既存の進行中機能はそのまま保持
 - 完了した機能セクションは変更しない
 
 #### 3.4 ユーザー承認
+
 タスクリストを提示し、以下を確認：
+
 - 実装順序の説明
 - クリティカルパスの強調
 - 実装開始の承認
@@ -254,6 +280,7 @@ scripts/
 ### Stage 4: Completion Report
 
 全ステージ完了後、以下をサマリー：
+
 - 生成されたドキュメント一覧
 - 各ドキュメントの配置場所
 - 次のアクション（実装開始）の案内

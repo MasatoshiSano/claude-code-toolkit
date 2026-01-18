@@ -5,9 +5,12 @@
  * セキュリティ脆弱性をスキャン（npm audit、シークレット検出）
  */
 
+const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const { Logger } = require('@claude-skills/utils');
+
+const logger = new Logger('code-quality-suite:security-scanner');
 
 /**
  * セキュリティスキャンを実行
@@ -18,12 +21,12 @@ const { execSync } = require('child_process');
 async function scanSecurity(options = {}) {
   const { directory = '.' } = options;
 
-  console.log(`\n🔒 Scanning for security vulnerabilities...\n`);
+  logger.info('\n🔒 Scanning for security vulnerabilities...\n');
 
   const results = {
     dependencies: await scanDependencies(directory),
     secrets: scanForSecrets(directory),
-    summary: null,
+    summary: null
   };
 
   results.summary = generateSecuritySummary(results);
@@ -43,14 +46,14 @@ async function scanDependencies(directory) {
     if (!fs.existsSync(packageJsonPath)) {
       return {
         status: 'skipped',
-        reason: 'package.json not found',
+        reason: 'package.json not found'
       };
     }
 
     // npm auditを実行
     const output = execSync('npm audit --json', {
       encoding: 'utf8',
-      cwd: directory,
+      cwd: directory
     });
 
     const audit = JSON.parse(output);
@@ -62,9 +65,9 @@ async function scanDependencies(directory) {
         high: audit.metadata?.vulnerabilities?.high || 0,
         moderate: audit.metadata?.vulnerabilities?.moderate || 0,
         low: audit.metadata?.vulnerabilities?.low || 0,
-        info: audit.metadata?.vulnerabilities?.info || 0,
+        info: audit.metadata?.vulnerabilities?.info || 0
       },
-      totalVulnerabilities: audit.metadata?.vulnerabilities?.total || 0,
+      totalVulnerabilities: audit.metadata?.vulnerabilities?.total || 0
     };
   } catch (error) {
     // npm auditはエラーコード1を返すことがあるが、出力は有効
@@ -79,9 +82,9 @@ async function scanDependencies(directory) {
             high: audit.metadata?.vulnerabilities?.high || 0,
             moderate: audit.metadata?.vulnerabilities?.moderate || 0,
             low: audit.metadata?.vulnerabilities?.low || 0,
-            info: audit.metadata?.vulnerabilities?.info || 0,
+            info: audit.metadata?.vulnerabilities?.info || 0
           },
-          totalVulnerabilities: audit.metadata?.vulnerabilities?.total || 0,
+          totalVulnerabilities: audit.metadata?.vulnerabilities?.total || 0
         };
       }
     } catch {
@@ -90,7 +93,7 @@ async function scanDependencies(directory) {
 
     return {
       status: 'error',
-      error: error.message,
+      error: error.message
     };
   }
 }
@@ -106,7 +109,7 @@ function scanForSecrets(directory) {
     { name: 'Private Key', pattern: /-----BEGIN (RSA |EC )?PRIVATE KEY-----/ },
     { name: 'Password in Code', pattern: /password\s*=\s*['"]/i },
     { name: 'API Key', pattern: /api[_-]?key\s*=\s*['"]/i },
-    { name: 'Auth Token', pattern: /auth[_-]?token\s*=\s*['"]/i },
+    { name: 'Auth Token', pattern: /auth[_-]?token\s*=\s*['"]/i }
   ];
 
   const findings = [];
@@ -132,7 +135,7 @@ function scanForSecrets(directory) {
               file: relativePath,
               line: index + 1,
               type: pattern.name,
-              snippet: line.substring(0, 80) + (line.length > 80 ? '...' : ''),
+              snippet: line.substring(0, 80) + (line.length > 80 ? '...' : '')
             });
           }
         });
@@ -168,14 +171,14 @@ function scanForSecrets(directory) {
   } catch (error) {
     return {
       status: 'error',
-      error: error.message,
+      error: error.message
     };
   }
 
   return {
     status: 'success',
     findings,
-    count: findings.length,
+    count: findings.length
   };
 }
 
@@ -185,16 +188,13 @@ function scanForSecrets(directory) {
  * @returns {Object} サマリー
  */
 function generateSecuritySummary(results) {
-  const criticalIssues =
-    (results.dependencies.vulnerabilities?.critical || 0) +
-    results.secrets.findings.filter((f) => f.type.includes('Private Key')).length;
+  const criticalIssues = (results.dependencies.vulnerabilities?.critical || 0)
+    + results.secrets.findings.filter((f) => f.type.includes('Private Key')).length;
 
-  const highIssues =
-    (results.dependencies.vulnerabilities?.high || 0) +
-    results.secrets.findings.filter((f) => f.type.includes('AWS')).length;
+  const highIssues = (results.dependencies.vulnerabilities?.high || 0)
+    + results.secrets.findings.filter((f) => f.type.includes('AWS')).length;
 
-  const totalIssues =
-    (results.dependencies.totalVulnerabilities || 0) + results.secrets.count;
+  const totalIssues = (results.dependencies.totalVulnerabilities || 0) + results.secrets.count;
 
   let score = 100;
   score -= criticalIssues * 10; // Critical: -10点
@@ -213,7 +213,7 @@ function generateSecuritySummary(results) {
     rating,
     totalIssues,
     criticalIssues,
-    highIssues,
+    highIssues
   };
 }
 
@@ -222,45 +222,45 @@ function generateSecuritySummary(results) {
  * @param {Object} results - スキャン結果
  */
 function displayResults(results) {
-  console.log('\n🔒 Security Scan Results\n');
-  console.log(`Security Score: ${results.summary.score}/100 (${results.summary.rating.toUpperCase()})\n`);
+  logger.info('\n🔒 Security Scan Results\n');
+  logger.info(`Security Score: ${results.summary.score}/100 (${results.summary.rating.toUpperCase()})\n`);
 
   // 依存関係の脆弱性
-  console.log('Dependency Vulnerabilities:');
+  logger.info('Dependency Vulnerabilities:');
   if (results.dependencies.status === 'skipped') {
-    console.log(`  ⚠️  ${results.dependencies.reason}\n`);
+    logger.info(`  ⚠️  ${results.dependencies.reason}\n`);
   } else {
     const vuln = results.dependencies.vulnerabilities;
-    console.log(`  Critical: ${vuln.critical}`);
-    console.log(`  High: ${vuln.high}`);
-    console.log(`  Moderate: ${vuln.moderate}`);
-    console.log(`  Low: ${vuln.low}`);
-    console.log(`  Total: ${results.dependencies.totalVulnerabilities}\n`);
+    logger.info(`  Critical: ${vuln.critical}`);
+    logger.info(`  High: ${vuln.high}`);
+    logger.info(`  Moderate: ${vuln.moderate}`);
+    logger.info(`  Low: ${vuln.low}`);
+    logger.info(`  Total: ${results.dependencies.totalVulnerabilities}\n`);
 
     if (results.dependencies.totalVulnerabilities > 0) {
-      console.log(`  💡 Run "npm audit fix" to automatically fix vulnerabilities\n`);
+      logger.info('  💡 Run "npm audit fix" to automatically fix vulnerabilities\n');
     }
   }
 
   // シークレット検出
-  console.log('Secret Detection:');
-  console.log(`  Potential secrets found: ${results.secrets.count}\n`);
+  logger.info('Secret Detection:');
+  logger.info(`  Potential secrets found: ${results.secrets.count}\n`);
 
   if (results.secrets.count > 0) {
-    console.log('  ⚠️  WARNING: Potential secrets detected:');
+    logger.info('  ⚠️  WARNING: Potential secrets detected:');
     results.secrets.findings.slice(0, 5).forEach((finding) => {
-      console.log(`     - ${finding.type} in ${finding.file}:${finding.line}`);
+      logger.info(`     - ${finding.type} in ${finding.file}:${finding.line}`);
     });
     if (results.secrets.count > 5) {
-      console.log(`     ... and ${results.secrets.count - 5} more\n`);
+      logger.info(`     ... and ${results.secrets.count - 5} more\n`);
     }
   }
 
   // Summary
-  console.log('Summary:');
-  console.log(`  Total Security Issues: ${results.summary.totalIssues}`);
-  console.log(`  Critical: ${results.summary.criticalIssues}`);
-  console.log(`  High: ${results.summary.highIssues}\n`);
+  logger.info('Summary:');
+  logger.info(`  Total Security Issues: ${results.summary.totalIssues}`);
+  logger.info(`  Critical: ${results.summary.criticalIssues}`);
+  logger.info(`  High: ${results.summary.highIssues}\n`);
 }
 
 /**
@@ -290,14 +290,14 @@ async function main() {
     const outputPath = path.join(outputDir, `security-scan-${timestamp}.json`);
     fs.writeFileSync(outputPath, JSON.stringify(results, null, 2));
 
-    console.log(`✓ Report saved to: ${outputPath}\n`);
+    logger.info(`✓ Report saved to: ${outputPath}\n`);
 
     // Critical issuesがある場合は終了コード1で終了
     if (results.summary.criticalIssues > 0) {
       process.exit(1);
     }
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    logger.error('❌ Error:', error.message);
     process.exit(1);
   }
 }

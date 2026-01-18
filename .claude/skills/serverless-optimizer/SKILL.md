@@ -1,6 +1,8 @@
 ---
 name: serverless-optimizer
-description: Optimize serverless architecture (Lambda, API Gateway, Step Functions, DynamoDB)
+description:
+  Optimize serverless architecture (Lambda, API Gateway, Step Functions,
+  DynamoDB)
 version: 1.0.0
 author: Claude Code Toolkit
 license: MIT
@@ -21,10 +23,9 @@ requires:
 
 ## 実装状況
 
-**ステータス**: ✅ Phase 1完了
-**実装日**: 2026-01-17
-**動作保証**: 基本機能
+**ステータス**: ✅ Phase 1完了 **実装日**: 2026-01-17 **動作保証**: 基本機能
 **実装済み機能**:
+
 - ✅ Lambda最適化（lambda-optimizer.js）
 - ✅ コールドスタート分析（coldstart-analyzer.js）
 - ✅ コスト計算（cost-calculator.js）
@@ -33,20 +34,23 @@ requires:
 - ✅ パフォーマンス閾値（configs/performance-thresholds.json）
 
 **未実装機能**（Phase 2以降で実装予定）:
+
 - 🚧 API Gateway最適化（apigateway-optimizer.js）
 - 🚧 DynamoDB最適化（dynamodb-optimizer.js）
 - 🚧 Step Functions最適化（stepfunctions-optimizer.js）
 - 🚧 パフォーマンス監視（performance-monitor.js）
 
 **動作要件**:
+
 - AWS CLI設定済み（`aws configure`）
 - IAM権限: `lambda:List*`, `lambda:Get*`, `cloudwatch:GetMetricStatistics`
-- Node.js依存パッケージ: `npm install @aws-sdk/client-lambda @aws-sdk/client-cloudwatch @aws-sdk/client-cloudwatch-logs`
+- Node.js依存パッケージ:
+  `npm install @aws-sdk/client-lambda @aws-sdk/client-cloudwatch @aws-sdk/client-cloudwatch-logs`
 
 ## Purpose
 
-このスキルは、サーバーレスアーキテクチャ（AWS Lambda、API Gateway、Step Functions、DynamoDB等）を最適化します。
-コールドスタート削減、コスト最適化、パフォーマンス向上、ベストプラクティス適用を自動化します。
+このスキルは、サーバーレスアーキテクチャ（AWS Lambda、API Gateway、Step
+Functions、DynamoDB等）を最適化します。コールドスタート削減、コスト最適化、パフォーマンス向上、ベストプラクティス適用を自動化します。
 
 ## When to Use
 
@@ -218,6 +222,7 @@ agent serverless-optimizer optimize-lambda \
 #### 1.3 コールドスタート削減
 
 **Provisioned Concurrency:**
+
 ```bash
 # Provisioned Concurrency設定
 agent serverless-optimizer configure-provisioned-concurrency \
@@ -261,6 +266,7 @@ agent serverless-optimizer configure-provisioned-concurrency \
 ```
 
 **Lambda Layers:**
+
 ```bash
 # 共通ライブラリをLayerに移動
 agent serverless-optimizer create-layer \
@@ -739,12 +745,14 @@ agent serverless-optimizer analyze-costs \
 ```
 
 **最適化プラン:**
+
 ```markdown
 # Serverless Optimization Plan: myapp
 
 ## Phase 1: Quick Wins (Week 1)
 
 ### 1. Lambda Memory Optimization
+
 - **Target**: 8 Lambda functions
 - **Action**: Reduce memory from 512 MB to 256 MB
 - **Savings**: $28.50/month
@@ -752,6 +760,7 @@ agent serverless-optimizer analyze-costs \
 - **Rollback**: Easy (update configuration)
 
 ### 2. DynamoDB Billing Mode
+
 - **Target**: 3 tables (users, orders, products)
 - **Action**: Switch to on-demand billing
 - **Savings**: $47.76/month
@@ -763,6 +772,7 @@ agent serverless-optimizer analyze-costs \
 ## Phase 2: Performance Enhancements (Week 2-3)
 
 ### 3. API Gateway Caching
+
 - **Target**: 3 GET endpoints
 - **Action**: Enable 0.5 GB cache, TTL 5 minutes
 - **Cost**: +$14.40/month cache, -$8.50/month Lambda
@@ -771,6 +781,7 @@ agent serverless-optimizer analyze-costs \
 - **Risk**: Low (cache invalidation configured)
 
 ### 4. Step Functions Migration
+
 - **Target**: order-processing workflow
 - **Action**: Standard → Express
 - **Savings**: $4.32/month
@@ -782,6 +793,7 @@ agent serverless-optimizer analyze-costs \
 ## Phase 3: Long-term Improvements (Week 4)
 
 ### 5. Lambda Layers
+
 - **Target**: Common dependencies (axios, lodash, moment)
 - **Action**: Extract to shared layer
 - **Savings**: $3.20/month
@@ -789,12 +801,13 @@ agent serverless-optimizer analyze-costs \
 - **Risk**: Low
 
 ### 6. Monitoring & Alerts
+
 - **Action**: Set up cost alerts
 - **Trigger**: Monthly cost > $80
 - **Benefit**: Prevent cost surprises
 
-**Total Savings**: $80.58/month (57% reduction)
-**New Monthly Cost**: $61.92 (down from $142.50)
+**Total Savings**: $80.58/month (57% reduction) **New Monthly Cost**: $61.92
+(down from $142.50)
 ```
 
 ## Error Handling

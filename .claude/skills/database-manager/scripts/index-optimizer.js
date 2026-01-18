@@ -7,6 +7,9 @@
 
 const fs = require('fs');
 const path = require('path');
+const { Logger } = require('@claude-skills/utils');
+
+const logger = new Logger('database-manager:index-optimizer');
 
 /**
  * インデックスを最適化
@@ -18,7 +21,7 @@ const path = require('path');
 async function optimizeIndexes(options) {
   const { database = 'postgresql', queries = [] } = options;
 
-  console.log(`\n🔧 Analyzing indexes for ${database}...\n`);
+  logger.info(`\n🔧 Analyzing indexes for ${database}...\n`);
 
   // クエリパターンを分析
   const queryPatterns = analyzeQueryPatterns(queries);
@@ -31,7 +34,7 @@ async function optimizeIndexes(options) {
     analyzedQueries: queries.length,
     queryPatterns,
     recommendations,
-    summary: generateIndexSummary(recommendations),
+    summary: generateIndexSummary(recommendations)
   };
 }
 
@@ -97,7 +100,7 @@ function extractQueryPattern(query) {
     tableName,
     whereColumns,
     orderColumns,
-    query: query.substring(0, 100) + (query.length > 100 ? '...' : ''),
+    query: query.substring(0, 100) + (query.length > 100 ? '...' : '')
   };
 }
 
@@ -131,7 +134,7 @@ function generateIndexRecommendations(queryPatterns, database) {
   });
 
   // 頻繁に使用されるカラムにインデックスを推奨
-  Object.entries(columnUsage).forEach(([key, usage]) => {
+  Object.entries(columnUsage).forEach(([_key, usage]) => {
     const totalUsage = usage.whereCount + usage.orderCount;
 
     if (totalUsage >= 2) {
@@ -147,7 +150,7 @@ function generateIndexRecommendations(queryPatterns, database) {
         orderUsage: usage.orderCount,
         priority: totalUsage >= 5 ? 'high' : 'medium',
         sql: indexSQL,
-        estimatedImpact: estimateIndexImpact(totalUsage),
+        estimatedImpact: estimateIndexImpact(totalUsage)
       });
     }
   });
@@ -164,7 +167,7 @@ function generateIndexRecommendations(queryPatterns, database) {
       usageCount: composite.count,
       priority: 'high',
       sql: indexSQL,
-      estimatedImpact: 'significant',
+      estimatedImpact: 'significant'
     });
   });
 
@@ -186,7 +189,7 @@ function findCompositeIndexOpportunities(queryPatterns) {
         composites[key] = {
           table: pattern.tableName,
           columns: pattern.whereColumns,
-          count: 0,
+          count: 0
         };
       }
       composites[key].count++;
@@ -203,7 +206,7 @@ function findCompositeIndexOpportunities(queryPatterns) {
  * @param {string} database - データベース種類
  * @returns {string} SQL文
  */
-function generateIndexSQL(tableName, columnName, database) {
+function generateIndexSQL(tableName, columnName, _database) {
   const indexName = `idx_${tableName}_${columnName}`;
   return `CREATE INDEX ${indexName} ON ${tableName}(${columnName});`;
 }
@@ -215,7 +218,7 @@ function generateIndexSQL(tableName, columnName, database) {
  * @param {string} database - データベース種類
  * @returns {string} SQL文
  */
-function generateCompositeIndexSQL(tableName, columns, database) {
+function generateCompositeIndexSQL(tableName, columns, _database) {
   const indexName = `idx_${tableName}_${columns.join('_')}`;
   return `CREATE INDEX ${indexName} ON ${tableName}(${columns.join(', ')});`;
 }
@@ -241,7 +244,7 @@ function generateIndexSummary(recommendations) {
     totalRecommendations: recommendations.length,
     highPriority: recommendations.filter((r) => r.priority === 'high').length,
     mediumPriority: recommendations.filter((r) => r.priority === 'medium').length,
-    compositeIndexes: recommendations.filter((r) => r.type === 'create-composite-index').length,
+    compositeIndexes: recommendations.filter((r) => r.type === 'create-composite-index').length
   };
 }
 
@@ -250,13 +253,13 @@ function generateIndexSummary(recommendations) {
  * @param {Object} results - 最適化結果
  */
 function displayResults(results) {
-  console.log('📊 Index Optimization Results\n');
-  console.log(`Database: ${results.database}`);
-  console.log(`Analyzed Queries: ${results.analyzedQueries}`);
-  console.log(`Recommendations: ${results.summary.totalRecommendations}\n`);
+  logger.info('📊 Index Optimization Results\n');
+  logger.info(`Database: ${results.database}`);
+  logger.info(`Analyzed Queries: ${results.analyzedQueries}`);
+  logger.info(`Recommendations: ${results.summary.totalRecommendations}\n`);
 
   if (results.recommendations.length === 0) {
-    console.log('✅ No index optimizations needed!\n');
+    logger.info('✅ No index optimizations needed!\n');
     return;
   }
 
@@ -265,24 +268,24 @@ function displayResults(results) {
   const medium = results.recommendations.filter((r) => r.priority === 'medium');
 
   if (high.length > 0) {
-    console.log(`HIGH Priority (${high.length}):\n`);
+    logger.info(`HIGH Priority (${high.length}):\n`);
     high.forEach((rec, index) => {
-      console.log(`${index + 1}. ${rec.type} on ${rec.table}`);
+      logger.info(`${index + 1}. ${rec.type} on ${rec.table}`);
       if (rec.columns) {
-        console.log(`   Columns: ${rec.columns.join(', ')}`);
+        logger.info(`   Columns: ${rec.columns.join(', ')}`);
       } else {
-        console.log(`   Column: ${rec.column}`);
+        logger.info(`   Column: ${rec.column}`);
       }
-      console.log(`   Usage: ${rec.usageCount} times`);
-      console.log(`   SQL: ${rec.sql}\n`);
+      logger.info(`   Usage: ${rec.usageCount} times`);
+      logger.info(`   SQL: ${rec.sql}\n`);
     });
   }
 
   if (medium.length > 0) {
-    console.log(`MEDIUM Priority (${medium.length}):\n`);
+    logger.info(`MEDIUM Priority (${medium.length}):\n`);
     medium.forEach((rec, index) => {
-      console.log(`${index + 1}. ${rec.type} on ${rec.table}.${rec.column}`);
-      console.log(`   SQL: ${rec.sql}\n`);
+      logger.info(`${index + 1}. ${rec.type} on ${rec.table}.${rec.column}`);
+      logger.info(`   SQL: ${rec.sql}\n`);
     });
   }
 }
@@ -291,7 +294,7 @@ function displayResults(results) {
  * CLIエントリーポイント
  */
 async function main() {
-  const args = process.argv.slice(2);
+  const _args = process.argv.slice(2);
 
   // サンプルクエリでデモ
   const sampleQueries = [
@@ -299,15 +302,15 @@ async function main() {
     'SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC',
     'SELECT * FROM products WHERE category_id = ? AND price > ?',
     'SELECT * FROM users WHERE email = ?',
-    'SELECT * FROM orders WHERE user_id = ? AND status = ?',
+    'SELECT * FROM orders WHERE user_id = ? AND status = ?'
   ];
 
   const options = {
     database: 'postgresql',
-    queries: sampleQueries,
+    queries: sampleQueries
   };
 
-  console.log('Running with sample queries...\n');
+  logger.info('Running with sample queries...\n');
 
   try {
     const results = await optimizeIndexes(options);
@@ -323,9 +326,9 @@ async function main() {
     const outputPath = path.join(outputDir, `index-optimization-${timestamp}.json`);
     fs.writeFileSync(outputPath, JSON.stringify(results, null, 2));
 
-    console.log(`✓ Report saved to: ${outputPath}\n`);
+    logger.info(`✓ Report saved to: ${outputPath}\n`);
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    logger.error('❌ Error:', error.message);
     process.exit(1);
   }
 }

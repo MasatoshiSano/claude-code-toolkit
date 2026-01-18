@@ -7,6 +7,9 @@
 
 const fs = require('fs');
 const path = require('path');
+const { Logger } = require('@claude-skills/utils');
+
+const logger = new Logger('aws-cost-optimizer:report-generator');
 
 /**
  * レポートを生成
@@ -30,7 +33,9 @@ function generateReport(costAnalysis, unusedResources, options = {}) {
     sections.push('## Executive Summary');
     sections.push('');
     sections.push(`- **Current Monthly Cost**: $${costAnalysis.totalCost} ${costAnalysis.currency}`);
-    sections.push(`- **Potential Monthly Savings**: $${unusedResources.totalMonthlyCost.toFixed(2)} (${calculateSavingsPercentage(costAnalysis.totalCost, unusedResources.totalMonthlyCost)}%)`);
+    sections.push(
+      `- **Potential Monthly Savings**: $${unusedResources.totalMonthlyCost.toFixed(2)} (${calculateSavingsPercentage(costAnalysis.totalCost, unusedResources.totalMonthlyCost)}%)`
+    );
     sections.push(`- **Estimated Annual Savings**: $${unusedResources.totalYearlyCost.toFixed(2)}`);
     sections.push('');
   }
@@ -59,7 +64,9 @@ function generateReport(costAnalysis, unusedResources, options = {}) {
     sections.push('|-------------|------|--------|--------------|--------------|----------------|');
     unusedResources.stoppedInstances.forEach((instance) => {
       const recommendation = instance.stoppedDays > 30 ? 'Terminate' : 'Review';
-      sections.push(`| ${instance.id} | ${instance.type} | ${instance.region} | ${instance.stoppedDays} | $${instance.monthlyCost.toFixed(2)} | ${recommendation} |`);
+      sections.push(
+        `| ${instance.id} | ${instance.type} | ${instance.region} | ${instance.stoppedDays} | $${instance.monthlyCost.toFixed(2)} | ${recommendation} |`
+      );
     });
     sections.push('');
   }
@@ -72,7 +79,9 @@ function generateReport(costAnalysis, unusedResources, options = {}) {
     sections.push('|-----------|------|------|--------|----------------|--------------|----------------|');
     unusedResources.unattachedVolumes.forEach((volume) => {
       const recommendation = volume.availableDays > 30 ? 'Delete' : 'Snapshot & Delete';
-      sections.push(`| ${volume.id} | ${volume.size}GB | ${volume.type} | ${volume.region} | ${volume.availableDays} | $${volume.monthlyCost.toFixed(2)} | ${recommendation} |`);
+      sections.push(
+        `| ${volume.id} | ${volume.size}GB | ${volume.type} | ${volume.region} | ${volume.availableDays} | $${volume.monthlyCost.toFixed(2)} | ${recommendation} |`
+      );
     });
     sections.push('');
   }
@@ -154,37 +163,28 @@ function generateRecommendations(unusedResources) {
 
   // EC2インスタンスの推奨
   if (unusedResources.stoppedInstances.length > 0) {
-    const totalEC2Savings = unusedResources.stoppedInstances.reduce(
-      (sum, instance) => sum + instance.monthlyCost,
-      0
-    );
+    const totalEC2Savings = unusedResources.stoppedInstances.reduce((sum, instance) => sum + instance.monthlyCost, 0);
     quickWins.push({
       description: `Terminate ${unusedResources.stoppedInstances.length} stopped EC2 instance(s)`,
-      savings: totalEC2Savings,
+      savings: totalEC2Savings
     });
   }
 
   // EBSボリュームの推奨
   if (unusedResources.unattachedVolumes.length > 0) {
-    const totalEBSSavings = unusedResources.unattachedVolumes.reduce(
-      (sum, volume) => sum + volume.monthlyCost,
-      0
-    );
+    const totalEBSSavings = unusedResources.unattachedVolumes.reduce((sum, volume) => sum + volume.monthlyCost, 0);
     quickWins.push({
       description: `Delete ${unusedResources.unattachedVolumes.length} unattached EBS volume(s)`,
-      savings: totalEBSSavings,
+      savings: totalEBSSavings
     });
   }
 
   // Elastic IPの推奨
   if (unusedResources.unallocatedEIPs.length > 0) {
-    const totalEIPSavings = unusedResources.unallocatedEIPs.reduce(
-      (sum, eip) => sum + eip.monthlyCost,
-      0
-    );
+    const totalEIPSavings = unusedResources.unallocatedEIPs.reduce((sum, eip) => sum + eip.monthlyCost, 0);
     quickWins.push({
       description: `Release ${unusedResources.unallocatedEIPs.length} unallocated Elastic IP(s)`,
-      savings: totalEIPSavings,
+      savings: totalEIPSavings
     });
   }
 
@@ -203,7 +203,7 @@ function saveReport(report, outputPath) {
   }
 
   fs.writeFileSync(outputPath, report);
-  console.log(`\n✓ Report saved to: ${outputPath}\n`);
+  logger.info(`\n✓ Report saved to: ${outputPath}\n`);
 }
 
 /**
@@ -216,8 +216,8 @@ async function main() {
   const reportsDir = path.join(__dirname, '..', 'reports');
 
   if (!fs.existsSync(reportsDir)) {
-    console.error('❌ Error: No reports directory found');
-    console.log('Run cost-analyzer.js and unused-resource-detector.js first');
+    logger.error('❌ Error: No reports directory found');
+    logger.info('Run cost-analyzer.js and unused-resource-detector.js first');
     process.exit(1);
   }
 
@@ -227,17 +227,13 @@ async function main() {
   const unusedResourcesFile = files.find((f) => f.startsWith('unused-resources-'));
 
   if (!costAnalysisFile || !unusedResourcesFile) {
-    console.error('❌ Error: Missing analysis data');
-    console.log('Run cost-analyzer.js and unused-resource-detector.js first');
+    logger.error('❌ Error: Missing analysis data');
+    logger.info('Run cost-analyzer.js and unused-resource-detector.js first');
     process.exit(1);
   }
 
-  const costAnalysis = JSON.parse(
-    fs.readFileSync(path.join(reportsDir, costAnalysisFile), 'utf8')
-  );
-  const unusedResources = JSON.parse(
-    fs.readFileSync(path.join(reportsDir, unusedResourcesFile), 'utf8')
-  );
+  const costAnalysis = JSON.parse(fs.readFileSync(path.join(reportsDir, costAnalysisFile), 'utf8'));
+  const unusedResources = JSON.parse(fs.readFileSync(path.join(reportsDir, unusedResourcesFile), 'utf8'));
 
   // レポートを生成
   const report = generateReport(costAnalysis, unusedResources);
@@ -248,10 +244,10 @@ async function main() {
 
   saveReport(report, outputPath);
 
-  console.log('📊 Report Summary:');
-  console.log(`   - Current Monthly Cost: $${costAnalysis.totalCost}`);
-  console.log(`   - Potential Savings: $${unusedResources.totalMonthlyCost.toFixed(2)}/month`);
-  console.log('');
+  logger.info('📊 Report Summary:');
+  logger.info(`   - Current Monthly Cost: $${costAnalysis.totalCost}`);
+  logger.info(`   - Potential Savings: $${unusedResources.totalMonthlyCost.toFixed(2)}/month`);
+  logger.info('');
 }
 
 // スクリプトとして実行された場合

@@ -42,30 +42,35 @@ This skill is integrated with the `/check` command:
 ### Configuration
 
 Edit configuration files to customize:
+
 - `configs/eslint-rules.json` - ESLint rules
 - `configs/security-rules.yaml` - Security scanning rules
 
 ## Features
 
 ### Code Quality
+
 - ✅ ESLint integration
 - ✅ TypeScript type checking
 - ✅ Complexity analysis (Cyclomatic Complexity)
 - ✅ Code smell detection
 
 ### Security
+
 - ✅ npm audit integration
 - ✅ Secret detection (API keys, passwords, private keys)
 - ✅ OWASP Top 10 checks
 - ✅ Dependency vulnerability scanning
 
 ### Performance
+
 - 🚧 Algorithm efficiency analysis (planned)
 - 🚧 Bundle size analysis (planned)
 
 ## Output
 
 Reports are saved to `reports/`:
+
 - `quality-check-YYYY-MM-DD.json` - Code quality results
 - `security-scan-YYYY-MM-DD.json` - Security scan results
 - `code-quality-suite-YYYY-MM-DD.md` - Unified Markdown report
@@ -73,6 +78,7 @@ Reports are saved to `reports/`:
 ## Scoring
 
 Overall score: 0-100
+
 - Code Quality: 50% weight
 - Security: 50% weight
 
@@ -83,11 +89,13 @@ See [SKILL.md](SKILL.md) for detailed specifications and instructions.
 ## Troubleshooting
 
 **Error: ESLint not found**
+
 ```bash
 npm install eslint --save-dev
 ```
 
 **Error: TypeScript not found**
+
 ```bash
 npm install typescript --save-dev
 ```

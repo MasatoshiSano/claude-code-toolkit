@@ -47,11 +47,7 @@
       "preferredTermLength": "3-year"
     },
     "tagging": {
-      "requiredTags": [
-        "Environment",
-        "Team",
-        "Project"
-      ],
+      "requiredTags": ["Environment", "Team", "Project"],
       "autoTagging": false
     },
     "budgets": {

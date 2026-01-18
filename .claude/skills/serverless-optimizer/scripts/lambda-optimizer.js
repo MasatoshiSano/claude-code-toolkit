@@ -5,10 +5,13 @@
  * Lambda関数のメモリ、タイムアウト、同時実行数を最適化
  */
 
-const { LambdaClient, ListFunctionsCommand, GetFunctionCommand } = require('@aws-sdk/client-lambda');
-const { CloudWatchClient, GetMetricStatisticsCommand } = require('@aws-sdk/client-cloudwatch');
 const fs = require('fs');
 const path = require('path');
+const { Logger } = require('@claude-skills/utils');
+const { CloudWatchClient, GetMetricStatisticsCommand } = require('@aws-sdk/client-cloudwatch');
+const { LambdaClient, ListFunctionsCommand, GetFunctionCommand } = require('@aws-sdk/client-lambda');
+
+const logger = new Logger('serverless-optimizer:lambda-optimizer');
 
 /**
  * Lambda関数を最適化
@@ -26,48 +29,40 @@ async function optimizeLambdaFunctions(options = {}) {
     require('@aws-sdk/client-lambda');
     require('@aws-sdk/client-cloudwatch');
   } catch (error) {
-    console.error('❌ Error: AWS SDK not found');
-    console.log('Install: npm install @aws-sdk/client-lambda @aws-sdk/client-cloudwatch');
+    logger.error('❌ Error: AWS SDK not found');
+    logger.info('Install: npm install @aws-sdk/client-lambda @aws-sdk/client-cloudwatch');
     process.exit(1);
   }
 
   const lambdaClient = new LambdaClient({ region });
   const cloudwatchClient = new CloudWatchClient({ region });
 
-  console.log(`\n🔧 Analyzing Lambda functions in ${region}...\n`);
+  logger.info(`\n🔧 Analyzing Lambda functions in ${region}...\n`);
 
   try {
     const functions = await getFunctions(lambdaClient, functionName);
     const recommendations = [];
 
     for (const func of functions) {
-      const analysis = await analyzeLambdaFunction(
-        lambdaClient,
-        cloudwatchClient,
-        func,
-        periodDays
-      );
+      const analysis = await analyzeLambdaFunction(lambdaClient, cloudwatchClient, func, periodDays);
 
       if (analysis.recommendation) {
         recommendations.push(analysis);
       }
     }
 
-    const totalSavings = recommendations.reduce(
-      (sum, rec) => sum + (rec.monthlySavings || 0),
-      0
-    );
+    const totalSavings = recommendations.reduce((sum, rec) => sum + (rec.monthlySavings || 0), 0);
 
     return {
       analyzedFunctions: functions.length,
       recommendations,
       totalMonthlySavings: totalSavings,
-      totalAnnualSavings: totalSavings * 12,
+      totalAnnualSavings: totalSavings * 12
     };
   } catch (error) {
     if (error.name === 'CredentialsProviderError') {
-      console.error('❌ AWS credentials not configured');
-      console.log('Run: aws configure');
+      logger.error('❌ AWS credentials not configured');
+      logger.info('Run: aws configure');
       process.exit(1);
     } else {
       throw error;
@@ -111,50 +106,40 @@ async function analyzeLambdaFunction(lambdaClient, cloudwatchClient, func, perio
 
   // 最適なメモリサイズを計算
   const optimalMemory = calculateOptimalMemory(currentMemoryMB, metrics);
-  const memorySavingsPercentage =
-    optimalMemory < currentMemoryMB
-      ? ((currentMemoryMB - optimalMemory) / currentMemoryMB) * 100
-      : 0;
+  const memorySavingsPercentage = optimalMemory < currentMemoryMB
+    ? ((currentMemoryMB - optimalMemory) / currentMemoryMB) * 100
+    : 0;
 
   // コスト計算
-  const currentMonthlyCost = estimateLambdaCost(
-    metrics.invocations,
-    metrics.avgDuration,
-    currentMemoryMB
-  );
-  const optimizedMonthlyCost = estimateLambdaCost(
-    metrics.invocations,
-    metrics.avgDuration,
-    optimalMemory
-  );
+  const currentMonthlyCost = estimateLambdaCost(metrics.invocations, metrics.avgDuration, currentMemoryMB);
+  const optimizedMonthlyCost = estimateLambdaCost(metrics.invocations, metrics.avgDuration, optimalMemory);
   const monthlySavings = currentMonthlyCost - optimizedMonthlyCost;
 
   // 推奨事項を生成
-  const recommendation =
-    memorySavingsPercentage > 10
-      ? {
-          type: 'memory-reduction',
-          from: currentMemoryMB,
-          to: optimalMemory,
-          savingsPercentage: memorySavingsPercentage.toFixed(1),
-        }
-      : null;
+  const recommendation = memorySavingsPercentage > 10
+    ? {
+      type: 'memory-reduction',
+      from: currentMemoryMB,
+      to: optimalMemory,
+      savingsPercentage: memorySavingsPercentage.toFixed(1)
+    }
+    : null;
 
   return {
     functionName,
     currentConfig: {
       memory: currentMemoryMB,
-      timeout: currentTimeoutSeconds,
+      timeout: currentTimeoutSeconds
     },
     metrics: {
       invocations: metrics.invocations,
       avgDuration: metrics.avgDuration,
-      maxMemoryUsed: metrics.maxMemoryUsed,
+      maxMemoryUsed: metrics.maxMemoryUsed
     },
     recommendation,
     currentMonthlyCost: currentMonthlyCost.toFixed(2),
     optimizedMonthlyCost: optimizedMonthlyCost.toFixed(2),
-    monthlySavings: monthlySavings.toFixed(2),
+    monthlySavings: monthlySavings.toFixed(2)
   };
 }
 
@@ -176,13 +161,13 @@ async function getLambdaMetrics(cloudwatchClient, functionName, periodDays) {
     Dimensions: [
       {
         Name: 'FunctionName',
-        Value: functionName,
-      },
+        Value: functionName
+      }
     ],
     StartTime: startTime,
     EndTime: endTime,
     Period: periodDays * 24 * 60 * 60,
-    Statistics: ['Sum'],
+    Statistics: ['Sum']
   });
 
   // Durationメトリクスを取得
@@ -192,25 +177,23 @@ async function getLambdaMetrics(cloudwatchClient, functionName, periodDays) {
     Dimensions: [
       {
         Name: 'FunctionName',
-        Value: functionName,
-      },
+        Value: functionName
+      }
     ],
     StartTime: startTime,
     EndTime: endTime,
     Period: periodDays * 24 * 60 * 60,
-    Statistics: ['Average'],
+    Statistics: ['Average']
   });
 
   try {
     const [invocationsResponse, durationResponse] = await Promise.all([
       cloudwatchClient.send(invocationsCommand),
-      cloudwatchClient.send(durationCommand),
+      cloudwatchClient.send(durationCommand)
     ]);
 
-    const invocations =
-      invocationsResponse.Datapoints[0]?.Sum || 0;
-    const avgDuration =
-      durationResponse.Datapoints[0]?.Average || 0;
+    const invocations = invocationsResponse.Datapoints[0]?.Sum || 0;
+    const avgDuration = durationResponse.Datapoints[0]?.Average || 0;
 
     // 簡略化: 実際のメモリ使用量は取得できないので推定
     const maxMemoryUsed = 128; // ダミー値
@@ -218,14 +201,14 @@ async function getLambdaMetrics(cloudwatchClient, functionName, periodDays) {
     return {
       invocations: Math.round(invocations),
       avgDuration: Math.round(avgDuration),
-      maxMemoryUsed,
+      maxMemoryUsed
     };
   } catch (error) {
     // メトリクスが取得できない場合はデフォルト値を返す
     return {
       invocations: 0,
       avgDuration: 1000,
-      maxMemoryUsed: 128,
+      maxMemoryUsed: 128
     };
   }
 }
@@ -242,10 +225,9 @@ function calculateOptimalMemory(currentMemory, metrics) {
 
   // Lambdaのメモリサイズの有効な値に丸める（64MB刻み）
   const validMemorySizes = [
-    128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024,
-    1088, 1152, 1216, 1280, 1344, 1408, 1472, 1536, 1600, 1664, 1728, 1792, 1856,
-    1920, 1984, 2048, 2112, 2176, 2240, 2304, 2368, 2432, 2496, 2560, 2624, 2688,
-    2752, 2816, 2880, 2944, 3008,
+    128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024, 1088, 1152, 1216, 1280, 1344, 1408,
+    1472, 1536, 1600, 1664, 1728, 1792, 1856, 1920, 1984, 2048, 2112, 2176, 2240, 2304, 2368, 2432, 2496, 2560, 2624,
+    2688, 2752, 2816, 2880, 2944, 3008
   ];
 
   const optimalMemory = validMemorySizes.find((size) => size >= recommendedMemory) || 128;
@@ -267,8 +249,7 @@ function estimateLambdaCost(invocations, avgDurationMs, memoryMB) {
   const pricePerGBSecond = 0.0000166667; // $0.0000166667 per GB-second
 
   const requestCost = invocations * pricePerRequest;
-  const computeCost =
-    invocations * (avgDurationMs / 1000) * (memoryMB / 1024) * pricePerGBSecond;
+  const computeCost = invocations * (avgDurationMs / 1000) * (memoryMB / 1024) * pricePerGBSecond;
 
   return requestCost + computeCost;
 }
@@ -278,30 +259,30 @@ function estimateLambdaCost(invocations, avgDurationMs, memoryMB) {
  * @param {Object} results - 最適化結果
  */
 function displayResults(results) {
-  console.log('\n📊 Lambda Optimization Analysis\n');
-  console.log(`Analyzed Functions: ${results.analyzedFunctions}`);
-  console.log(`Optimization Opportunities: ${results.recommendations.length}\n`);
+  logger.info('\n📊 Lambda Optimization Analysis\n');
+  logger.info(`Analyzed Functions: ${results.analyzedFunctions}`);
+  logger.info(`Optimization Opportunities: ${results.recommendations.length}\n`);
 
   if (results.recommendations.length === 0) {
-    console.log('✅ All functions are optimally configured!\n');
+    logger.info('✅ All functions are optimally configured!\n');
     return;
   }
 
   results.recommendations.forEach((rec, index) => {
-    console.log(`${index + 1}. ${rec.functionName}`);
-    console.log(`   Current: ${rec.currentConfig.memory}MB`);
+    logger.info(`${index + 1}. ${rec.functionName}`);
+    logger.info(`   Current: ${rec.currentConfig.memory}MB`);
 
     if (rec.recommendation) {
-      console.log(`   Recommendation: ${rec.recommendation.to}MB`);
-      console.log(`   Savings: ${rec.recommendation.savingsPercentage}%`);
-      console.log(`   Monthly Cost: $${rec.currentMonthlyCost} → $${rec.optimizedMonthlyCost}`);
-      console.log(`   Monthly Savings: $${rec.monthlySavings}\n`);
+      logger.info(`   Recommendation: ${rec.recommendation.to}MB`);
+      logger.info(`   Savings: ${rec.recommendation.savingsPercentage}%`);
+      logger.info(`   Monthly Cost: $${rec.currentMonthlyCost} → $${rec.optimizedMonthlyCost}`);
+      logger.info(`   Monthly Savings: $${rec.monthlySavings}\n`);
     }
   });
 
-  console.log('\n💰 Total Potential Savings:');
-  console.log(`   - Monthly: $${results.totalMonthlySavings.toFixed(2)}`);
-  console.log(`   - Annual: $${results.totalAnnualSavings.toFixed(2)}\n`);
+  logger.info('\n💰 Total Potential Savings:');
+  logger.info(`   - Monthly: $${results.totalMonthlySavings.toFixed(2)}`);
+  logger.info(`   - Annual: $${results.totalAnnualSavings.toFixed(2)}\n`);
 }
 
 /**
@@ -335,9 +316,9 @@ async function main() {
     const outputPath = path.join(outputDir, `lambda-optimization-${timestamp}.json`);
     fs.writeFileSync(outputPath, JSON.stringify(results, null, 2));
 
-    console.log(`✓ Report saved to: ${outputPath}\n`);
+    logger.info(`✓ Report saved to: ${outputPath}\n`);
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    logger.error('❌ Error:', error.message);
     process.exit(1);
   }
 }

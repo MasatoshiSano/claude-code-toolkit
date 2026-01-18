@@ -8,6 +8,9 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const { Logger } = require('@claude-skills/utils');
+
+const logger = new Logger('technical-blog-generator:analyze-commit');
 
 /**
  * コミットを分析
@@ -19,7 +22,7 @@ const path = require('path');
 function analyzeCommit(options = {}) {
   const { commit = 'HEAD', baseBranch = null } = options;
 
-  console.log(`\n📝 Analyzing commit: ${commit}...\n`);
+  logger.info(`\n📝 Analyzing commit: ${commit}...\n`);
 
   try {
     // Gitリポジトリかチェック
@@ -48,10 +51,10 @@ function analyzeCommit(options = {}) {
       changes,
       techStack,
       impact,
-      summary: generateSummary(commitInfo, changes, techStack, impact),
+      summary: generateSummary(commitInfo, changes, techStack, impact)
     };
   } catch (error) {
-    console.error('❌ Error analyzing commit:', error.message);
+    logger.error('❌ Error analyzing commit:', error.message);
     throw error;
   }
 }
@@ -86,7 +89,7 @@ function getCommitInfo(commit) {
       shortHash: hash.substring(0, 7),
       message,
       author,
-      date,
+      date
     };
   } catch (error) {
     throw new Error(`Failed to get commit info: ${error.message}`);
@@ -120,7 +123,7 @@ function getChangedFiles(commit, baseBranch) {
         path: filePath,
         extension: path.extname(filePath),
         directory: path.dirname(filePath),
-        filename: path.basename(filePath),
+        filename: path.basename(filePath)
       };
     });
   } catch (error) {
@@ -135,11 +138,11 @@ function getChangedFiles(commit, baseBranch) {
  */
 function getStatusName(code) {
   const statusMap = {
-    'A': 'added',
-    'M': 'modified',
-    'D': 'deleted',
-    'R': 'renamed',
-    'C': 'copied',
+    A: 'added',
+    M: 'modified',
+    D: 'deleted',
+    R: 'renamed',
+    C: 'copied'
   };
   return statusMap[code] || code;
 }
@@ -156,7 +159,7 @@ function analyzeChanges(changedFiles, commit, baseBranch) {
     additions: 0,
     deletions: 0,
     filesByType: {},
-    codeChanges: [],
+    codeChanges: []
   };
 
   changedFiles.forEach((file) => {
@@ -183,7 +186,7 @@ function analyzeChanges(changedFiles, commit, baseBranch) {
 
         changes.codeChanges.push({
           file: file.path,
-          ...stats,
+          ...stats
         });
       } catch (error) {
         // Diffの取得に失敗した場合はスキップ
@@ -201,9 +204,34 @@ function analyzeChanges(changedFiles, commit, baseBranch) {
  */
 function isTextFile(extension) {
   const textExtensions = [
-    '.js', '.ts', '.jsx', '.tsx', '.py', '.java', '.go', '.rs', '.c', '.cpp', '.h',
-    '.css', '.scss', '.sass', '.less', '.html', '.xml', '.json', '.yaml', '.yml',
-    '.md', '.txt', '.sh', '.bash', '.sql', '.graphql', '.vue', '.svelte',
+    '.js',
+    '.ts',
+    '.jsx',
+    '.tsx',
+    '.py',
+    '.java',
+    '.go',
+    '.rs',
+    '.c',
+    '.cpp',
+    '.h',
+    '.css',
+    '.scss',
+    '.sass',
+    '.less',
+    '.html',
+    '.xml',
+    '.json',
+    '.yaml',
+    '.yml',
+    '.md',
+    '.txt',
+    '.sh',
+    '.bash',
+    '.sql',
+    '.graphql',
+    '.vue',
+    '.svelte'
   ];
   return textExtensions.includes(extension);
 }
@@ -235,7 +263,7 @@ function analyzeDiff(diff) {
     deletions,
     netChange: additions - deletions,
     addedLines,
-    deletedLines,
+    deletedLines
   };
 }
 
@@ -322,9 +350,7 @@ function analyzeImpact(changes) {
   else if (totalChanges > 100) impactLevel = 'medium';
 
   const fileCount = changes.codeChanges.length;
-  const affectedDirectories = new Set(
-    changes.codeChanges.map((c) => path.dirname(c.file))
-  );
+  const affectedDirectories = new Set(changes.codeChanges.map((c) => path.dirname(c.file)));
 
   return {
     level: impactLevel,
@@ -332,7 +358,7 @@ function analyzeImpact(changes) {
     fileCount,
     directoryCount: affectedDirectories.size,
     additions: changes.additions,
-    deletions: changes.deletions,
+    deletions: changes.deletions
   };
 }
 
@@ -374,7 +400,7 @@ function saveResult(result, outputPath) {
   }
 
   fs.writeFileSync(outputPath, JSON.stringify(result, null, 2));
-  console.log(`\n✓ Analysis saved to: ${outputPath}\n`);
+  logger.info(`\n✓ Analysis saved to: ${outputPath}\n`);
 }
 
 /**
@@ -395,7 +421,7 @@ async function main() {
   try {
     const result = analyzeCommit(options);
 
-    console.log(result.summary);
+    logger.info(result.summary);
 
     // 結果をJSONファイルとして保存
     const outputDir = path.join(__dirname, '..', 'reports');
@@ -403,7 +429,7 @@ async function main() {
     const outputPath = path.join(outputDir, `commit-analysis-${timestamp}.json`);
     saveResult(result, outputPath);
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    logger.error('❌ Error:', error.message);
     process.exit(1);
   }
 }

@@ -1,0 +1,38 @@
+{
+  "name": "@claude-code-toolkit/spec-driven-development",
+  "version": "1.0.0",
+  "description": "Complete specification-driven development workflow (Requirements → Design → Tasks)",
+  "type": "module",
+  "main": "scripts/merge-documents.js",
+  "scripts": {
+    "requirements": "node scripts/generate-requirements.js",
+    "design": "node scripts/generate-design.js",
+    "tasks": "node scripts/generate-tasks.js",
+    "merge": "node scripts/merge-documents.js",
+    "validate": "node scripts/validate-consistency.js",
+    "test": "jest"
+  },
+  "keywords": [
+    "specification",
+    "requirements",
+    "design",
+    "planning",
+    "workflow",
+    "documentation"
+  ],
+  "author": "Claude Code Toolkit",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "dependencies": {
+    "@claude-code-toolkit/utils": "*",
+    "simple-git": "^3.22.0",
+    "js-yaml": "^4.1.0",
+    "chalk": "^5.3.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "@types/node": "^20.11.0"
+  }
+}

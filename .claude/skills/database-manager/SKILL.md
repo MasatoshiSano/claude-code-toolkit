@@ -1,6 +1,7 @@
 ---
 name: database-manager
-description: Database schema management, migrations, optimization, and automation
+description:
+  Database schema management, migrations, optimization, and automation
 version: 1.0.0
 author: Claude Code Toolkit
 license: MIT
@@ -21,20 +22,22 @@ requires:
 
 ## 実装状況
 
-**ステータス**: ✅ Phase 1完了
-**実装日**: 2026-01-17
-**動作保証**: 基本機能（Prisma/TypeORMのみ対応）
-**実装済み機能**:
+**ステータス**: ✅ Phase 1完了 **実装日**: 2026-01-17
+**動作保証**: 基本機能（Prisma/TypeORMのみ対応） **実装済み機能**:
+
 - ✅ マイグレーション生成（migration-generator.js）
 - ✅ スキーマ分析（schema-analyzer.js）
 - ✅ インデックス最適化（index-optimizer.js）
 - ✅ クエリ分析（query-analyzer.js）
-- ✅ Prismaマイグレーションテンプレート（templates/prisma/migration-template.sql）
-- ✅ TypeORMマイグレーションテンプレート（templates/typeorm/migration-template.ts）
+- ✅
+  Prismaマイグレーションテンプレート（templates/prisma/migration-template.sql）
+- ✅
+  TypeORMマイグレーションテンプレート（templates/typeorm/migration-template.ts）
 - ✅ データベース設定（configs/database-config.json）
 - ✅ 最適化ルール（configs/optimization-rules.json）
 
 **未実装機能**（Phase 2以降で実装予定）:
+
 - 🚧 ロールバック管理（rollback-manager.js）
 - 🚧 データ整合性検証（data-validator.js）
 - 🚧 バックアップ自動化（backup-automation.js）
@@ -42,14 +45,14 @@ requires:
 - 🚧 Sequelize対応
 
 **動作要件**:
+
 - Node.js >= 16
 - Prisma または TypeORM（プロジェクトに応じて）
 - データベース接続情報（PostgreSQL/MySQL等）
 
 ## Purpose
 
-このスキルは、データベースのスキーマ管理、マイグレーション、最適化を自動化します。
-Prisma/TypeORM/Sequelize対応、ロールバック戦略、データ整合性検証、パフォーマンス分析を提供します。
+このスキルは、データベースのスキーマ管理、マイグレーション、最適化を自動化します。Prisma/TypeORM/Sequelize対応、ロールバック戦略、データ整合性検証、パフォーマンス分析を提供します。
 
 ## When to Use
 
@@ -104,6 +107,7 @@ examples/
 #### 1.1 スキーマ変更の分析
 
 **既存スキーマの確認:**
+
 ```bash
 # Prismaの場合
 agent database-manager analyze-schema --orm=prisma
@@ -135,6 +139,7 @@ agent database-manager analyze-schema \
 #### 1.2 マイグレーションスクリプト生成
 
 **Prismaマイグレーション:**
+
 ```bash
 # スキーマ変更からマイグレーション生成
 agent database-manager generate-migration \
@@ -152,6 +157,7 @@ agent database-manager generate-migration \
 ```
 
 **生成されたPrisma Migration:**
+
 ```sql
 -- prisma/migrations/20260116_add_email_verification/migration.sql
 
@@ -179,46 +185,61 @@ COMMIT;
 ```
 
 **TypeORM Migration:**
+
 ```typescript
 // src/migrations/1705395600000-AddEmailVerification.ts
-import { MigrationInterface, QueryRunner, TableColumn, TableIndex } from "typeorm";
+import {
+  MigrationInterface,
+  QueryRunner,
+  TableColumn,
+  TableIndex
+} from 'typeorm';
 
 export class AddEmailVerification1705395600000 implements MigrationInterface {
-  name = 'AddEmailVerification1705395600000'
+  name = 'AddEmailVerification1705395600000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Add email_verified column
-    await queryRunner.addColumn("users", new TableColumn({
-      name: "email_verified",
-      type: "boolean",
-      default: false,
-      isNullable: false
-    }));
+    await queryRunner.addColumn(
+      'users',
+      new TableColumn({
+        name: 'email_verified',
+        type: 'boolean',
+        default: false,
+        isNullable: false
+      })
+    );
 
     // Add verification_token column
-    await queryRunner.addColumn("users", new TableColumn({
-      name: "verification_token",
-      type: "varchar",
-      length: "255",
-      isNullable: true,
-      isUnique: true
-    }));
+    await queryRunner.addColumn(
+      'users',
+      new TableColumn({
+        name: 'verification_token',
+        type: 'varchar',
+        length: '255',
+        isNullable: true,
+        isUnique: true
+      })
+    );
 
     // Create index
-    await queryRunner.createIndex("users", new TableIndex({
-      name: "IDX_users_verification_token",
-      columnNames: ["verification_token"],
-      where: "verification_token IS NOT NULL"
-    }));
+    await queryRunner.createIndex(
+      'users',
+      new TableIndex({
+        name: 'IDX_users_verification_token',
+        columnNames: ['verification_token'],
+        where: 'verification_token IS NOT NULL'
+      })
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     // Drop index
-    await queryRunner.dropIndex("users", "IDX_users_verification_token");
+    await queryRunner.dropIndex('users', 'IDX_users_verification_token');
 
     // Drop columns
-    await queryRunner.dropColumn("users", "verification_token");
-    await queryRunner.dropColumn("users", "email_verified");
+    await queryRunner.dropColumn('users', 'verification_token');
+    await queryRunner.dropColumn('users', 'email_verified');
   }
 }
 ```
@@ -226,6 +247,7 @@ export class AddEmailVerification1705395600000 implements MigrationInterface {
 #### 1.3 複雑なマイグレーション
 
 **テーブル作成:**
+
 ```bash
 agent database-manager generate-migration \
   --orm=prisma \
@@ -248,6 +270,7 @@ agent database-manager generate-migration \
 ```
 
 **データ移行を含むマイグレーション:**
+
 ```sql
 -- Migration: Split 'name' into 'first_name' and 'last_name'
 
@@ -373,6 +396,7 @@ agent database-manager restore \
 ```
 
 **ロールバックスクリプト例:**
+
 ```typescript
 // TypeORM Down Migration
 public async down(queryRunner: QueryRunner): Promise<void> {
@@ -429,6 +453,7 @@ agent database-manager validate \
 ```
 
 **自動修復スクリプト:**
+
 ```javascript
 // scripts/data-validator.js
 async function validateAndFix(options) {
@@ -514,6 +539,7 @@ agent database-manager analyze-indexes \
 ```
 
 **インデックス最適化実行:**
+
 ```bash
 # 推奨インデックスを自動作成
 agent database-manager optimize-indexes \
@@ -578,6 +604,7 @@ agent database-manager analyze-queries \
 ```
 
 **クエリ最適化提案:**
+
 ```sql
 -- Before: N+1 Query
 -- User controller makes 1 query for users, then N queries for each user's orders
@@ -608,7 +635,7 @@ backup_strategy:
   schedule:
     - type: full
       frequency: daily
-      time: "02:00"
+      time: '02:00'
       retention: 7 days
 
     - type: incremental
@@ -632,6 +659,7 @@ backup_strategy:
 ```
 
 **バックアップ実行:**
+
 ```bash
 # 手動バックアップ
 agent database-manager backup \

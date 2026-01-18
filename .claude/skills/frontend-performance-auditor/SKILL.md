@@ -1,6 +1,8 @@
 ---
 name: frontend-performance-auditor
-description: Analyze and optimize frontend performance with Lighthouse, Core Web Vitals, and bundle analysis
+description:
+  Analyze and optimize frontend performance with Lighthouse, Core Web Vitals,
+  and bundle analysis
 version: 1.0.0
 author: Claude Code Toolkit
 license: MIT
@@ -21,8 +23,8 @@ requires:
 
 ## Purpose
 
-このスキルは、フロントエンドのパフォーマンスを包括的に分析し、最適化提案を提供します。
-Lighthouse、Core Web Vitals、バンドル分析、画像最適化を統合し、具体的な改善策を提示します。
+このスキルは、フロントエンドのパフォーマンスを包括的に分析し、最適化提案を提供します。Lighthouse、Core
+Web Vitals、バンドル分析、画像最適化を統合し、具体的な改善策を提示します。
 
 ## When to Use
 
@@ -92,6 +94,7 @@ agent frontend-performance-auditor audit \
 #### 1.2 詳細な監査レポート
 
 **lighthouse-config.js:**
+
 ```javascript
 module.exports = {
   extends: 'lighthouse:default',
@@ -105,9 +108,9 @@ module.exports = {
       requestLatencyMs: 562.5,
       downloadThroughputKbps: 1474.5,
       uploadThroughputKbps: 675,
-      cpuSlowdownMultiplier: 4,
-    },
-  },
+      cpuSlowdownMultiplier: 4
+    }
+  }
 };
 ```
 
@@ -120,27 +123,27 @@ module.exports = {
 import { getCLS, getFID, getLCP, getFCP, getTTFB } from 'web-vitals';
 
 function reportWebVitals() {
-  getCLS(metric => {
+  getCLS((metric) => {
     console.log('CLS:', metric.value);
     sendToAnalytics('CLS', metric.value);
   });
 
-  getFID(metric => {
+  getFID((metric) => {
     console.log('FID:', metric.value);
     sendToAnalytics('FID', metric.value);
   });
 
-  getLCP(metric => {
+  getLCP((metric) => {
     console.log('LCP:', metric.value);
     sendToAnalytics('LCP', metric.value);
   });
 
-  getFCP(metric => {
+  getFCP((metric) => {
     console.log('FCP:', metric.value);
     sendToAnalytics('FCP', metric.value);
   });
 
-  getTTFB(metric => {
+  getTTFB((metric) => {
     console.log('TTFB:', metric.value);
     sendToAnalytics('TTFB', metric.value);
   });
@@ -148,36 +151,42 @@ function reportWebVitals() {
 ```
 
 **分析結果:**
+
 ```markdown
 # Core Web Vitals Report
 
 ## Summary
+
 Based on 10,000 real user sessions over the last 7 days
 
-| Metric | P75 | Status | Target | Grade |
-|--------|-----|--------|--------|-------|
-| LCP    | 3.2s| ⚠️ Needs Improvement | <2.5s | C |
-| FID    | 85ms| ✅ Good | <100ms | A |
-| CLS    | 0.18| ⚠️ Needs Improvement | <0.1 | C |
-| FCP    | 1.8s| ✅ Good | <1.8s | A |
-| TTFB   | 420ms| ✅ Good | <600ms | A |
+| Metric | P75   | Status               | Target | Grade |
+| ------ | ----- | -------------------- | ------ | ----- |
+| LCP    | 3.2s  | ⚠️ Needs Improvement | <2.5s  | C     |
+| FID    | 85ms  | ✅ Good              | <100ms | A     |
+| CLS    | 0.18  | ⚠️ Needs Improvement | <0.1   | C     |
+| FCP    | 1.8s  | ✅ Good              | <1.8s  | A     |
+| TTFB   | 420ms | ✅ Good              | <600ms | A     |
 
 ## Overall Grade: C+
+
 2/5 metrics need improvement
 
 ## Distribution
 
 ### LCP Distribution
+
 - Good (<2.5s): 45%
 - Needs Improvement (2.5s-4.0s): 35%
 - Poor (>4.0s): 20%
 
 ### FID Distribution
+
 - Good (<100ms): 85%
 - Needs Improvement (100ms-300ms): 12%
 - Poor (>300ms): 3%
 
 ### CLS Distribution
+
 - Good (<0.1): 40%
 - Needs Improvement (0.1-0.25): 45%
 - Poor (>0.25): 15%
@@ -185,12 +194,14 @@ Based on 10,000 real user sessions over the last 7 days
 ## Recommendations
 
 ### Priority 1: Improve LCP (3.2s → <2.5s)
+
 - Optimize largest image (hero-banner.jpg, 2.1MB)
 - Preload LCP image
 - Use CDN for static assets
 - Implement lazy loading for below-fold images
 
 ### Priority 2: Reduce CLS (0.18 → <0.1)
+
 - Reserve space for dynamic content
 - Specify width/height for images
 - Avoid inserting content above existing content
@@ -239,6 +250,7 @@ agent frontend-performance-auditor analyze-bundle \
 ```
 
 **バンドル最適化提案:**
+
 ```javascript
 // webpack.config.js の最適化
 module.exports = {
@@ -249,25 +261,25 @@ module.exports = {
         vendor: {
           test: /[\\/]node_modules[\\/]/,
           name: 'vendors',
-          priority: 10,
+          priority: 10
         },
         common: {
           minChunks: 2,
           priority: 5,
-          reuseExistingChunk: true,
-        },
-      },
+          reuseExistingChunk: true
+        }
+      }
     },
     minimize: true,
     minimizer: [
       new TerserPlugin({
         terserOptions: {
           compress: {
-            drop_console: true, // Remove console.log in production
-          },
-        },
-      }),
-    ],
+            drop_console: true // Remove console.log in production
+          }
+        }
+      })
+    ]
   },
 
   // Tree shaking
@@ -278,9 +290,9 @@ module.exports = {
     new BundleAnalyzerPlugin({
       analyzerMode: 'static',
       openAnalyzer: false,
-      reportFilename: 'bundle-report.html',
-    }),
-  ],
+      reportFilename: 'bundle-report.html'
+    })
+  ]
 };
 ```
 
@@ -326,20 +338,25 @@ agent frontend-performance-auditor optimize-images \
 ```
 
 **最適化後の画像タグ:**
+
 ```html
 <!-- 自動生成されたレスポンシブ画像 -->
 <picture>
   <source
-    srcset="hero-banner-mobile.webp 480w,
-            hero-banner-tablet.webp 768w,
-            hero-banner-desktop.webp 1920w"
+    srcset="
+      hero-banner-mobile.webp   480w,
+      hero-banner-tablet.webp   768w,
+      hero-banner-desktop.webp 1920w
+    "
     sizes="100vw"
     type="image/webp"
   />
   <source
-    srcset="hero-banner-mobile.jpg 480w,
-            hero-banner-tablet.jpg 768w,
-            hero-banner-desktop.jpg 1920w"
+    srcset="
+      hero-banner-mobile.jpg   480w,
+      hero-banner-tablet.jpg   768w,
+      hero-banner-desktop.jpg 1920w
+    "
     sizes="100vw"
     type="image/jpeg"
   />
@@ -358,6 +375,7 @@ agent frontend-performance-auditor optimize-images \
 #### 5.1 予算設定
 
 **budget-config.json:**
+
 ```json
 {
   "budgets": [
@@ -497,7 +515,13 @@ function App() {
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
 <!-- Preload -->
-<link rel="preload" href="/fonts/main.woff2" as="font" type="font/woff2" crossorigin />
+<link
+  rel="preload"
+  href="/fonts/main.woff2"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
 <link rel="preload" href="/images/hero.webp" as="image" />
 
 <!-- Prefetch -->
@@ -515,7 +539,7 @@ self.addEventListener('install', (event) => {
         '/',
         '/styles/main.css',
         '/scripts/main.js',
-        '/images/logo.svg',
+        '/images/logo.svg'
       ]);
     })
   );

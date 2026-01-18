@@ -5,6 +5,10 @@
  * サーバーレスアーキテクチャ（Lambda、API Gateway、DynamoDB）のコストを計算
  */
 
+const { Logger } = require('@claude-skills/utils');
+
+const logger = new Logger('serverless-optimizer:cost-calculator');
+
 /**
  * Lambda関数のコストを計算
  * @param {Object} params - Lambda設定
@@ -15,12 +19,7 @@
  * @returns {Object} コスト詳細
  */
 function calculateLambdaCost(params) {
-  const {
-    invocationsPerMonth,
-    avgDurationMs,
-    memoryMB,
-    provisionedConcurrency = 0,
-  } = params;
+  const { invocationsPerMonth, avgDurationMs, memoryMB, provisionedConcurrency = 0 } = params;
 
   // Lambda料金（us-east-1、2025年価格）
   const pricePerRequest = 0.0000002; // $0.20 per 1M requests
@@ -36,8 +35,7 @@ function calculateLambdaCost(params) {
   const computeCost = Math.max(0, gbSeconds - freeTierGBSeconds) * pricePerGBSecond;
 
   // Provisioned Concurrencyコスト
-  const provisionedCost =
-    provisionedConcurrency * (memoryMB / 1024) * 730 * provisionedConcurrencyPrice;
+  const provisionedCost = provisionedConcurrency * (memoryMB / 1024) * 730 * provisionedConcurrencyPrice;
 
   const totalCost = requestCost + computeCost + provisionedCost;
 
@@ -47,9 +45,9 @@ function calculateLambdaCost(params) {
       requestCost: requestCost.toFixed(4),
       computeCost: computeCost.toFixed(4),
       provisionedCost: provisionedCost.toFixed(4),
-      totalCost: totalCost.toFixed(2),
+      totalCost: totalCost.toFixed(2)
     },
-    totalCost,
+    totalCost
   };
 }
 
@@ -63,12 +61,7 @@ function calculateLambdaCost(params) {
  * @returns {Object} コスト詳細
  */
 function calculateAPIGatewayCost(params) {
-  const {
-    requestsPerMonth,
-    type = 'REST',
-    cachingEnabled = false,
-    cacheSize = '0.5GB',
-  } = params;
+  const { requestsPerMonth, type = 'REST', cachingEnabled = false, cacheSize = '0.5GB' } = params;
 
   // API Gateway料金
   const restAPIPrice = 0.0000035; // $3.50 per million requests (REST API)
@@ -81,14 +74,14 @@ function calculateAPIGatewayCost(params) {
 
   // キャッシングコスト（時間単位）
   const cachePrices = {
-    '0.5GB': 0.020,
+    '0.5GB': 0.02,
     '1.6GB': 0.038,
-    '6.1GB': 0.200,
-    '13.5GB': 0.250,
-    '28.4GB': 0.500,
-    '58.2GB': 1.000,
-    '118GB': 1.900,
-    '237GB': 3.800,
+    '6.1GB': 0.2,
+    '13.5GB': 0.25,
+    '28.4GB': 0.5,
+    '58.2GB': 1.0,
+    '118GB': 1.9,
+    '237GB': 3.8
   };
 
   const cachingCost = cachingEnabled ? (cachePrices[cacheSize] || 0) * 730 : 0;
@@ -101,9 +94,9 @@ function calculateAPIGatewayCost(params) {
     details: {
       requestCost: requestCost.toFixed(4),
       cachingCost: cachingCost.toFixed(2),
-      totalCost: totalCost.toFixed(2),
+      totalCost: totalCost.toFixed(2)
     },
-    totalCost,
+    totalCost
   };
 }
 
@@ -125,7 +118,7 @@ function calculateDynamoDBCost(params) {
     writeRequestsPerMonth = 0,
     readCapacityUnits = 0,
     writeCapacityUnits = 0,
-    storageSizeGB = 0,
+    storageSizeGB = 0
   } = params;
 
   // DynamoDB料金
@@ -163,9 +156,9 @@ function calculateDynamoDBCost(params) {
       readCost: readCost.toFixed(4),
       writeCost: writeCost.toFixed(4),
       storageCost: storageCost.toFixed(2),
-      totalCost: totalCost.toFixed(2),
+      totalCost: totalCost.toFixed(2)
     },
-    totalCost,
+    totalCost
   };
 }
 
@@ -178,7 +171,7 @@ function calculateServerlessCost(architecture) {
   const costs = {
     lambda: architecture.lambda ? calculateLambdaCost(architecture.lambda) : null,
     apiGateway: architecture.apiGateway ? calculateAPIGatewayCost(architecture.apiGateway) : null,
-    dynamodb: architecture.dynamodb ? calculateDynamoDBCost(architecture.dynamodb) : null,
+    dynamodb: architecture.dynamodb ? calculateDynamoDBCost(architecture.dynamodb) : null
   };
 
   const totalCost = Object.values(costs)
@@ -188,7 +181,7 @@ function calculateServerlessCost(architecture) {
   return {
     breakdown: costs,
     totalMonthlyCost: totalCost.toFixed(2),
-    totalAnnualCost: (totalCost * 12).toFixed(2),
+    totalAnnualCost: (totalCost * 12).toFixed(2)
   };
 }
 
@@ -197,33 +190,33 @@ function calculateServerlessCost(architecture) {
  * @param {Object} results - 計算結果
  */
 function displayCostBreakdown(results) {
-  console.log('\n💰 Serverless Cost Breakdown\n');
+  logger.info('\n💰 Serverless Cost Breakdown\n');
 
   if (results.breakdown.lambda) {
-    console.log('Lambda:');
-    console.log(`  - Request Cost: $${results.breakdown.lambda.details.requestCost}`);
-    console.log(`  - Compute Cost: $${results.breakdown.lambda.details.computeCost}`);
-    console.log(`  - Provisioned Concurrency: $${results.breakdown.lambda.details.provisionedCost}`);
-    console.log(`  - Total: $${results.breakdown.lambda.details.totalCost}\n`);
+    logger.info('Lambda:');
+    logger.info(`  - Request Cost: $${results.breakdown.lambda.details.requestCost}`);
+    logger.info(`  - Compute Cost: $${results.breakdown.lambda.details.computeCost}`);
+    logger.info(`  - Provisioned Concurrency: $${results.breakdown.lambda.details.provisionedCost}`);
+    logger.info(`  - Total: $${results.breakdown.lambda.details.totalCost}\n`);
   }
 
   if (results.breakdown.apiGateway) {
-    console.log(`API Gateway (${results.breakdown.apiGateway.type}):`);
-    console.log(`  - Request Cost: $${results.breakdown.apiGateway.details.requestCost}`);
-    console.log(`  - Caching Cost: $${results.breakdown.apiGateway.details.cachingCost}`);
-    console.log(`  - Total: $${results.breakdown.apiGateway.details.totalCost}\n`);
+    logger.info(`API Gateway (${results.breakdown.apiGateway.type}):`);
+    logger.info(`  - Request Cost: $${results.breakdown.apiGateway.details.requestCost}`);
+    logger.info(`  - Caching Cost: $${results.breakdown.apiGateway.details.cachingCost}`);
+    logger.info(`  - Total: $${results.breakdown.apiGateway.details.totalCost}\n`);
   }
 
   if (results.breakdown.dynamodb) {
-    console.log(`DynamoDB (${results.breakdown.dynamodb.mode}):`);
-    console.log(`  - Read Cost: $${results.breakdown.dynamodb.details.readCost}`);
-    console.log(`  - Write Cost: $${results.breakdown.dynamodb.details.writeCost}`);
-    console.log(`  - Storage Cost: $${results.breakdown.dynamodb.details.storageCost}`);
-    console.log(`  - Total: $${results.breakdown.dynamodb.details.totalCost}\n`);
+    logger.info(`DynamoDB (${results.breakdown.dynamodb.mode}):`);
+    logger.info(`  - Read Cost: $${results.breakdown.dynamodb.details.readCost}`);
+    logger.info(`  - Write Cost: $${results.breakdown.dynamodb.details.writeCost}`);
+    logger.info(`  - Storage Cost: $${results.breakdown.dynamodb.details.storageCost}`);
+    logger.info(`  - Total: $${results.breakdown.dynamodb.details.totalCost}\n`);
   }
 
-  console.log('Total Monthly Cost: $' + results.totalMonthlyCost);
-  console.log('Total Annual Cost: $' + results.totalAnnualCost + '\n');
+  logger.info(`Total Monthly Cost: $${results.totalMonthlyCost}`);
+  logger.info(`Total Annual Cost: $${results.totalAnnualCost}\n`);
 }
 
 /**
@@ -236,26 +229,26 @@ function main() {
       invocationsPerMonth: 5000000,
       avgDurationMs: 200,
       memoryMB: 512,
-      provisionedConcurrency: 0,
+      provisionedConcurrency: 0
     },
     apiGateway: {
       requestsPerMonth: 5000000,
       type: 'REST',
-      cachingEnabled: false,
+      cachingEnabled: false
     },
     dynamodb: {
       mode: 'on-demand',
       readRequestsPerMonth: 10000000,
       writeRequestsPerMonth: 2000000,
-      storageSizeGB: 10,
-    },
+      storageSizeGB: 10
+    }
   };
 
   const results = calculateServerlessCost(exampleArchitecture);
   displayCostBreakdown(results);
 
-  console.log('📝 Example calculation completed.');
-  console.log('For custom calculations, use the exported functions.\n');
+  logger.info('📝 Example calculation completed.');
+  logger.info('For custom calculations, use the exported functions.\n');
 }
 
 // スクリプトとして実行された場合
@@ -267,5 +260,5 @@ module.exports = {
   calculateLambdaCost,
   calculateAPIGatewayCost,
   calculateDynamoDBCost,
-  calculateServerlessCost,
+  calculateServerlessCost
 };

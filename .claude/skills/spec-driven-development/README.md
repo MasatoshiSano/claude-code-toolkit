@@ -1,6 +1,7 @@
 # Spec-Driven Development
 
-Complete specification-driven development workflow: Requirements → Design → Tasks.
+Complete specification-driven development workflow: Requirements → Design →
+Tasks.
 
 ## Quick Start
 
@@ -43,6 +44,7 @@ This skill is integrated with specification commands:
 ### Workspace
 
 Documents are created in `.tmp/` directory:
+
 - `requirements.md` - Requirements specification
 - `design.md` - Detailed design
 - `tasks.md` - Implementation tasks
@@ -50,17 +52,20 @@ Documents are created in `.tmp/` directory:
 ## Features
 
 ### Document Management
+
 - ✅ Automatic merging with existing documents
 - ✅ Duplicate detection and removal
 - ✅ Section consolidation
 
 ### Validation
+
 - ✅ Component name consistency
 - ✅ Requirements coverage (all requirements in design)
 - ✅ Task coverage (all components have tasks)
 - ✅ Circular dependency detection
 
 ### Revision History
+
 - ✅ Git-based change detection
 - ✅ Automatic revision entry generation
 - ✅ Author attribution
@@ -68,17 +73,20 @@ Documents are created in `.tmp/` directory:
 ## Workflow
 
 ### 1. Requirements Phase
+
 - Define functional/non-functional requirements
 - Identify constraints and success criteria
 - Auto-merge with existing requirements.md
 
 ### 2. Design Phase
+
 - Design architecture and components
 - Define data flow and APIs
 - Validate consistency with requirements
 - Auto-merge with existing design.md
 
 ### 3. Tasks Phase
+
 - Break down design into implementable tasks
 - Define dependencies and estimates
 - Validate coverage of all components
@@ -87,6 +95,7 @@ Documents are created in `.tmp/` directory:
 ## Output
 
 Validation results saved to `reports/`:
+
 - `validation-results.json` - Consistency check results
 
 ## Documentation
@@ -96,14 +105,17 @@ See [SKILL.md](SKILL.md) for detailed specifications and instructions.
 ## Troubleshooting
 
 **Error: Circular dependency detected**
+
 - Review task dependencies in tasks.md
 - Break circular references
 
 **Error: Component not found in design**
+
 - Ensure component is defined in design.md
 - Check for naming inconsistencies
 
 **Warning: Requirement not covered**
+
 - Add component to design.md that addresses the requirement
 
 ## Best Practices

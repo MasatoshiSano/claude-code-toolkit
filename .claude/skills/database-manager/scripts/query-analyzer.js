@@ -7,6 +7,9 @@
 
 const fs = require('fs');
 const path = require('path');
+const { Logger } = require('@claude-skills/utils');
+
+const logger = new Logger('database-manager:query-analyzer');
 
 /**
  * クエリを分析
@@ -18,7 +21,7 @@ const path = require('path');
 function analyzeQueries(options = {}) {
   const { queries = [], dbType = 'postgres' } = options;
 
-  console.log(`\n🔍 Analyzing ${queries.length} queries...\n`);
+  logger.info(`\n🔍 Analyzing ${queries.length} queries...\n`);
 
   const results = {
     queries: [],
@@ -27,8 +30,8 @@ function analyzeQueries(options = {}) {
     summary: {
       totalQueries: queries.length,
       issuesFound: 0,
-      avgComplexity: 0,
-    },
+      avgComplexity: 0
+    }
   };
 
   queries.forEach((query, index) => {
@@ -37,22 +40,26 @@ function analyzeQueries(options = {}) {
     results.queries.push({
       id: index + 1,
       query: query.substring(0, 100) + (query.length > 100 ? '...' : ''),
-      ...analysis,
+      ...analysis
     });
 
     if (analysis.issues.length > 0) {
-      results.issues.push(...analysis.issues.map((issue) => ({
-        queryId: index + 1,
-        ...issue,
-      })));
+      results.issues.push(
+        ...analysis.issues.map((issue) => ({
+          queryId: index + 1,
+          ...issue
+        }))
+      );
       results.summary.issuesFound += analysis.issues.length;
     }
 
     if (analysis.recommendations.length > 0) {
-      results.recommendations.push(...analysis.recommendations.map((rec) => ({
-        queryId: index + 1,
-        ...rec,
-      })));
+      results.recommendations.push(
+        ...analysis.recommendations.map((rec) => ({
+          queryId: index + 1,
+          ...rec
+        }))
+      );
     }
   });
 
@@ -77,7 +84,7 @@ function analyzeQuery(query, dbType) {
     type: detectQueryType(normalized),
     complexity: calculateComplexity(normalized),
     issues: [],
-    recommendations: [],
+    recommendations: []
   };
 
   // 問題を検出
@@ -146,7 +153,7 @@ function calculateComplexity(query) {
  * @param {string} dbType - データベースタイプ
  * @returns {Array} 検出された問題
  */
-function detectQueryIssues(query, dbType) {
+function detectQueryIssues(query, _dbType) {
   const issues = [];
 
   // SELECT * の使用
@@ -155,7 +162,7 @@ function detectQueryIssues(query, dbType) {
       type: 'select-all',
       severity: 'medium',
       description: 'SELECT * is used instead of specific columns',
-      impact: 'Fetches unnecessary data, increases network traffic and memory usage',
+      impact: 'Fetches unnecessary data, increases network traffic and memory usage'
     });
   }
 
@@ -165,7 +172,7 @@ function detectQueryIssues(query, dbType) {
       type: 'missing-where-clause',
       severity: 'critical',
       description: 'UPDATE/DELETE without WHERE clause',
-      impact: 'May affect all rows in the table',
+      impact: 'May affect all rows in the table'
     });
   }
 
@@ -176,7 +183,7 @@ function detectQueryIssues(query, dbType) {
       type: 'inefficient-like',
       severity: 'high',
       description: 'LIKE with leading wildcard prevents index usage',
-      impact: 'Full table scan required',
+      impact: 'Full table scan required'
     });
   }
 
@@ -187,7 +194,7 @@ function detectQueryIssues(query, dbType) {
       type: 'function-in-where',
       severity: 'medium',
       description: 'Function applied to column in WHERE clause',
-      impact: 'Prevents index usage on that column',
+      impact: 'Prevents index usage on that column'
     });
   }
 
@@ -198,7 +205,7 @@ function detectQueryIssues(query, dbType) {
       type: 'excessive-or-conditions',
       severity: 'medium',
       description: `Too many OR conditions (${orCount})`,
-      impact: 'Consider using IN clause or UNION instead',
+      impact: 'Consider using IN clause or UNION instead'
     });
   }
 
@@ -211,7 +218,7 @@ function detectQueryIssues(query, dbType) {
         type: 'large-in-clause',
         severity: 'high',
         description: `IN clause with ${itemCount} items`,
-        impact: 'Consider using temporary table or JOIN instead',
+        impact: 'Consider using temporary table or JOIN instead'
       });
     }
   }
@@ -223,7 +230,7 @@ function detectQueryIssues(query, dbType) {
       type: 'subquery-in-select',
       severity: 'medium',
       description: 'Subquery in SELECT clause',
-      impact: 'Executes for each row, consider using JOIN',
+      impact: 'Executes for each row, consider using JOIN'
     });
   }
 
@@ -233,7 +240,7 @@ function detectQueryIssues(query, dbType) {
       type: 'unnecessary-distinct',
       severity: 'low',
       description: 'DISTINCT without GROUP BY',
-      impact: 'May indicate data model issue or missing JOIN condition',
+      impact: 'May indicate data model issue or missing JOIN condition'
     });
   }
 
@@ -244,7 +251,7 @@ function detectQueryIssues(query, dbType) {
       type: 'large-offset',
       severity: 'high',
       description: `Large OFFSET value (${offsetMatch[1]})`,
-      impact: 'Database must scan and skip many rows, use cursor-based pagination',
+      impact: 'Database must scan and skip many rows, use cursor-based pagination'
     });
   }
 
@@ -267,7 +274,7 @@ function generateQueryRecommendations(query, issues, dbType) {
         recommendations.push({
           priority: 'medium',
           recommendation: 'Specify only required columns in SELECT clause',
-          example: 'SELECT id, name, email FROM users WHERE ...',
+          example: 'SELECT id, name, email FROM users WHERE ...'
         });
         break;
 
@@ -275,7 +282,7 @@ function generateQueryRecommendations(query, issues, dbType) {
         recommendations.push({
           priority: 'critical',
           recommendation: 'Always use WHERE clause with UPDATE/DELETE',
-          example: 'DELETE FROM table WHERE id = ?',
+          example: 'DELETE FROM table WHERE id = ?'
         });
         break;
 
@@ -283,9 +290,10 @@ function generateQueryRecommendations(query, issues, dbType) {
         recommendations.push({
           priority: 'high',
           recommendation: 'Use full-text search or avoid leading wildcard',
-          example: dbType === 'postgres'
-            ? 'Use: WHERE column ILIKE \'pattern%\' or to_tsvector(column) @@ to_tsquery(\'pattern\')'
-            : 'Use: WHERE column LIKE \'pattern%\' or MATCH(column) AGAINST(\'pattern\')',
+          example:
+            dbType === 'postgres'
+              ? "Use: WHERE column ILIKE 'pattern%' or to_tsvector(column) @@ to_tsquery('pattern')"
+              : "Use: WHERE column LIKE 'pattern%' or MATCH(column) AGAINST('pattern')"
         });
         break;
 
@@ -293,9 +301,10 @@ function generateQueryRecommendations(query, issues, dbType) {
         recommendations.push({
           priority: 'medium',
           recommendation: 'Avoid functions on columns in WHERE clause, or create functional index',
-          example: dbType === 'postgres'
-            ? 'CREATE INDEX idx_lower_email ON users (LOWER(email))'
-            : 'Consider computed column or redesign query',
+          example:
+            dbType === 'postgres'
+              ? 'CREATE INDEX idx_lower_email ON users (LOWER(email))'
+              : 'Consider computed column or redesign query'
         });
         break;
 
@@ -303,7 +312,7 @@ function generateQueryRecommendations(query, issues, dbType) {
         recommendations.push({
           priority: 'medium',
           recommendation: 'Replace multiple OR with IN clause or UNION',
-          example: 'WHERE status IN (\'active\', \'pending\', \'approved\')',
+          example: "WHERE status IN ('active', 'pending', 'approved')"
         });
         break;
 
@@ -311,7 +320,8 @@ function generateQueryRecommendations(query, issues, dbType) {
         recommendations.push({
           priority: 'high',
           recommendation: 'Use temporary table or JOIN instead of large IN clause',
-          example: 'CREATE TEMP TABLE temp_ids (id INT); INSERT INTO temp_ids VALUES (...); SELECT * FROM table JOIN temp_ids USING (id)',
+          example:
+            'CREATE TEMP TABLE temp_ids (id INT); INSERT INTO temp_ids VALUES (...); SELECT * FROM table JOIN temp_ids USING (id)'
         });
         break;
 
@@ -319,7 +329,7 @@ function generateQueryRecommendations(query, issues, dbType) {
         recommendations.push({
           priority: 'medium',
           recommendation: 'Convert subquery to JOIN or use window functions',
-          example: 'SELECT t1.*, t2.count FROM table1 t1 LEFT JOIN (SELECT ...) t2 ON ...',
+          example: 'SELECT t1.*, t2.count FROM table1 t1 LEFT JOIN (SELECT ...) t2 ON ...'
         });
         break;
 
@@ -327,7 +337,7 @@ function generateQueryRecommendations(query, issues, dbType) {
         recommendations.push({
           priority: 'high',
           recommendation: 'Use cursor-based pagination instead of OFFSET',
-          example: 'WHERE id > last_seen_id ORDER BY id LIMIT 20',
+          example: 'WHERE id > last_seen_id ORDER BY id LIMIT 20'
         });
         break;
     }
@@ -338,7 +348,7 @@ function generateQueryRecommendations(query, issues, dbType) {
     recommendations.push({
       priority: 'low',
       recommendation: 'Consider adding LIMIT clause to prevent fetching too many rows',
-      example: 'SELECT ... LIMIT 100',
+      example: 'SELECT ... LIMIT 100'
     });
   }
 
@@ -350,64 +360,64 @@ function generateQueryRecommendations(query, issues, dbType) {
  * @param {Object} results - 分析結果
  */
 function displayResults(results) {
-  console.log('📊 Query Analysis Results\n');
+  logger.info('📊 Query Analysis Results\n');
 
-  console.log('Summary:');
-  console.log(`  Total Queries: ${results.summary.totalQueries}`);
-  console.log(`  Issues Found: ${results.summary.issuesFound}`);
-  console.log(`  Average Complexity: ${results.summary.avgComplexity}/10\n`);
+  logger.info('Summary:');
+  logger.info(`  Total Queries: ${results.summary.totalQueries}`);
+  logger.info(`  Issues Found: ${results.summary.issuesFound}`);
+  logger.info(`  Average Complexity: ${results.summary.avgComplexity}/10\n`);
 
   if (results.issues.length > 0) {
-    console.log('🚨 Issues Detected:\n');
+    logger.info('🚨 Issues Detected:\n');
 
     // 重要度別にグループ化
     const criticalIssues = results.issues.filter((i) => i.severity === 'critical');
     const highIssues = results.issues.filter((i) => i.severity === 'high');
     const mediumIssues = results.issues.filter((i) => i.severity === 'medium');
-    const lowIssues = results.issues.filter((i) => i.severity === 'low');
+    const _lowIssues = results.issues.filter((i) => i.severity === 'low');
 
     if (criticalIssues.length > 0) {
-      console.log('  🔴 CRITICAL:');
+      logger.info('  🔴 CRITICAL:');
       criticalIssues.forEach((issue) => {
-        console.log(`     Query #${issue.queryId}: ${issue.description}`);
-        console.log(`     Impact: ${issue.impact}\n`);
+        logger.info(`     Query #${issue.queryId}: ${issue.description}`);
+        logger.info(`     Impact: ${issue.impact}\n`);
       });
     }
 
     if (highIssues.length > 0) {
-      console.log('  🟠 HIGH:');
+      logger.info('  🟠 HIGH:');
       highIssues.forEach((issue) => {
-        console.log(`     Query #${issue.queryId}: ${issue.description}`);
-        console.log(`     Impact: ${issue.impact}\n`);
+        logger.info(`     Query #${issue.queryId}: ${issue.description}`);
+        logger.info(`     Impact: ${issue.impact}\n`);
       });
     }
 
     if (mediumIssues.length > 0) {
-      console.log('  🟡 MEDIUM:');
+      logger.info('  🟡 MEDIUM:');
       mediumIssues.forEach((issue) => {
-        console.log(`     Query #${issue.queryId}: ${issue.description}`);
+        logger.info(`     Query #${issue.queryId}: ${issue.description}`);
       });
-      console.log('');
+      logger.info('');
     }
   }
 
   if (results.recommendations.length > 0) {
-    console.log('💡 Recommendations:\n');
+    logger.info('💡 Recommendations:\n');
 
     const criticalRecs = results.recommendations.filter((r) => r.priority === 'critical');
     const highRecs = results.recommendations.filter((r) => r.priority === 'high');
 
     if (criticalRecs.length > 0) {
       criticalRecs.slice(0, 3).forEach((rec) => {
-        console.log(`  🔴 Query #${rec.queryId}: ${rec.recommendation}`);
-        console.log(`     Example: ${rec.example}\n`);
+        logger.info(`  🔴 Query #${rec.queryId}: ${rec.recommendation}`);
+        logger.info(`     Example: ${rec.example}\n`);
       });
     }
 
     if (highRecs.length > 0) {
       highRecs.slice(0, 3).forEach((rec) => {
-        console.log(`  🟠 Query #${rec.queryId}: ${rec.recommendation}`);
-        console.log(`     Example: ${rec.example}\n`);
+        logger.info(`  🟠 Query #${rec.queryId}: ${rec.recommendation}`);
+        logger.info(`     Example: ${rec.example}\n`);
       });
     }
   }
@@ -425,7 +435,7 @@ function saveResults(results, outputPath) {
   }
 
   fs.writeFileSync(outputPath, JSON.stringify(results, null, 2));
-  console.log(`✓ Analysis results saved to: ${outputPath}\n`);
+  logger.info(`✓ Analysis results saved to: ${outputPath}\n`);
 }
 
 /**
@@ -435,9 +445,9 @@ async function main() {
   const args = process.argv.slice(2);
 
   if (args.length === 0) {
-    console.error('Usage: query-analyzer.js <queries-file.sql> [--db-type=postgres|mysql|sqlite]');
-    console.error('');
-    console.error('The queries file should contain one query per line or queries separated by semicolons.');
+    logger.error('Usage: query-analyzer.js <queries-file.sql> [--db-type=postgres|mysql|sqlite]');
+    logger.error('');
+    logger.error('The queries file should contain one query per line or queries separated by semicolons.');
     process.exit(1);
   }
 
@@ -485,7 +495,7 @@ async function main() {
       process.exit(1);
     }
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    logger.error('❌ Error:', error.message);
     process.exit(1);
   }
 }
@@ -499,5 +509,5 @@ module.exports = {
   analyzeQueries,
   analyzeQuery,
   detectQueryIssues,
-  generateQueryRecommendations,
+  generateQueryRecommendations
 };

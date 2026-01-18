@@ -7,6 +7,9 @@
 
 const fs = require('fs');
 const path = require('path');
+const { Logger } = require('@claude-skills/utils');
+
+const logger = new Logger('technical-blog-generator:detect-blog-topics');
 
 /**
  * ブログトピックを検出
@@ -15,9 +18,9 @@ const path = require('path');
  * @returns {Array} トピック候補
  */
 function detectBlogTopics(commitAnalysis, options = {}) {
-  const { minImpact = 'small', maxTopics = 5 } = options;
+  const { minImpact: _minImpact = 'small', maxTopics = 5 } = options;
 
-  console.log('\n🔍 Detecting blog topics...\n');
+  logger.info('\n🔍 Detecting blog topics...\n');
 
   const topics = [];
 
@@ -59,7 +62,7 @@ function detectBlogTopics(commitAnalysis, options = {}) {
     ...topic,
     id: `topic-${index + 1}`,
     commitHash: commitAnalysis.commitInfo.shortHash,
-    detectedAt: new Date().toISOString(),
+    detectedAt: new Date().toISOString()
   }));
 }
 
@@ -73,10 +76,11 @@ function detectNewFeatures(commitAnalysis) {
   const { commitInfo, changedFiles, techStack } = commitAnalysis;
 
   // コミットメッセージから判断
-  if (commitInfo.message.toLowerCase().includes('feat:') ||
-      commitInfo.message.toLowerCase().includes('feature:') ||
-      commitInfo.message.toLowerCase().includes('add:')) {
-
+  if (
+    commitInfo.message.toLowerCase().includes('feat:')
+    || commitInfo.message.toLowerCase().includes('feature:')
+    || commitInfo.message.toLowerCase().includes('add:')
+  ) {
     // 新しいコンポーネント/ファイルの追加
     const newFiles = changedFiles.filter((f) => f.status === 'added');
 
@@ -95,8 +99,8 @@ function detectNewFeatures(commitAnalysis) {
           `解決策：${extractFeatureTitle(commitInfo.message)}とは`,
           '実装：ステップバイステップで解説',
           '使い方：実際の利用例',
-          'まとめと今後の展望',
-        ],
+          'まとめと今後の展望'
+        ]
       });
     }
   }
@@ -114,8 +118,16 @@ function detectPerformanceImprovements(commitAnalysis) {
   const { commitInfo, changes, techStack } = commitAnalysis;
 
   const perfKeywords = [
-    'performance', 'optimize', 'speed', 'fast', 'cache', 'lazy',
-    'パフォーマンス', '最適化', '高速化', 'キャッシュ',
+    'performance',
+    'optimize',
+    'speed',
+    'fast',
+    'cache',
+    'lazy',
+    'パフォーマンス',
+    '最適化',
+    '高速化',
+    'キャッシュ'
   ];
 
   const message = commitInfo.message.toLowerCase();
@@ -133,12 +145,12 @@ function detectPerformanceImprovements(commitAnalysis) {
       keyFiles: changes.codeChanges.slice(0, 3).map((c) => c.file),
       suggestedSections: [
         '問題：パフォーマンスボトルネックの発見',
-          '分析：Before の状態',
+        '分析：Before の状態',
         '解決策：最適化のアプローチ',
         '実装：具体的な改善コード',
         '結果：どれくらい改善されたか（数値で示す）',
-        '注意点とベストプラクティス',
-      ],
+        '注意点とベストプラクティス'
+      ]
     });
   }
 
@@ -154,15 +166,16 @@ function detectRefactorings(commitAnalysis) {
   const topics = [];
   const { commitInfo, changes, impact } = commitAnalysis;
 
-  if (commitInfo.message.toLowerCase().includes('refactor:') ||
-      commitInfo.message.toLowerCase().includes('リファクタリング')) {
-
+  if (
+    commitInfo.message.toLowerCase().includes('refactor:')
+    || commitInfo.message.toLowerCase().includes('リファクタリング')
+  ) {
     // 中規模以上のリファクタリングのみ
     if (impact.level !== 'small') {
       topics.push({
         type: 'refactoring',
         title: `リファクタリング事例：${extractRefactoringTarget(commitInfo.message)}`,
-        description: `コードの可読性と保守性を向上させるリファクタリング`,
+        description: 'コードの可読性と保守性を向上させるリファクタリング',
         priority: 'medium',
         targetAudience: 'intermediate',
         estimatedReadingTime: 12,
@@ -174,8 +187,8 @@ function detectRefactorings(commitAnalysis) {
           'After: 改善後のコード',
           '改善のポイント解説',
           '得られた効果（メトリクスで示す）',
-          '適用できる他のケース',
-        ],
+          '適用できる他のケース'
+        ]
       });
     }
   }
@@ -192,16 +205,17 @@ function detectBugFixes(commitAnalysis) {
   const topics = [];
   const { commitInfo, changes } = commitAnalysis;
 
-  if (commitInfo.message.toLowerCase().includes('fix:') ||
-      commitInfo.message.toLowerCase().includes('bug:') ||
-      commitInfo.message.toLowerCase().includes('修正')) {
-
+  if (
+    commitInfo.message.toLowerCase().includes('fix:')
+    || commitInfo.message.toLowerCase().includes('bug:')
+    || commitInfo.message.toLowerCase().includes('修正')
+  ) {
     // 重要なバグ修正のみ（変更行数が一定以上）
     if (changes.additions + changes.deletions > 20) {
       topics.push({
         type: 'bug-fix',
         title: `バグ解決：${extractBugDescription(commitInfo.message)}`,
-        description: `よくあるバグとその解決方法`,
+        description: 'よくあるバグとその解決方法',
         priority: 'medium',
         targetAudience: 'beginner',
         estimatedReadingTime: 8,
@@ -212,8 +226,8 @@ function detectBugFixes(commitAnalysis) {
           '原因：なぜこのバグが発生したのか',
           '解決策：修正内容の詳細',
           '再発防止：同じミスを防ぐには',
-          'まとめ',
-        ],
+          'まとめ'
+        ]
       });
     }
   }
@@ -231,9 +245,7 @@ function detectTechStackChanges(commitAnalysis) {
   const { changedFiles, techStack } = commitAnalysis;
 
   // package.jsonの変更
-  const packageJsonChanged = changedFiles.some(
-    (f) => f.filename === 'package.json' && f.status === 'modified'
-  );
+  const packageJsonChanged = changedFiles.some((f) => f.filename === 'package.json' && f.status === 'modified');
 
   // 新しい技術スタックの導入
   const hasNewTech = techStack.length > 0;
@@ -256,8 +268,8 @@ function detectTechStackChanges(commitAnalysis) {
           '基本的な使い方',
           '実際のコード例',
           '注意点とトラブルシューティング',
-          '次のステップ',
-        ],
+          '次のステップ'
+        ]
       });
     });
   }
@@ -276,9 +288,7 @@ function detectArchitectureChanges(commitAnalysis) {
 
   // 大規模変更
   if (impact.level === 'large' && impact.directoryCount > 3) {
-    const archKeywords = [
-      'architecture', 'restructure', 'migrate', 'アーキテクチャ', '構造', '移行',
-    ];
+    const archKeywords = ['architecture', 'restructure', 'migrate', 'アーキテクチャ', '構造', '移行'];
 
     const message = commitInfo.message.toLowerCase();
     const hasArchKeyword = archKeywords.some((keyword) => message.includes(keyword));
@@ -287,7 +297,7 @@ function detectArchitectureChanges(commitAnalysis) {
       topics.push({
         type: 'architecture',
         title: `アーキテクチャ刷新：${extractArchitectureChange(commitInfo.message)}`,
-        description: `システムアーキテクチャの改善と移行`,
+        description: 'システムアーキテクチャの改善と移行',
         priority: 'high',
         targetAudience: 'advanced',
         estimatedReadingTime: 25,
@@ -299,8 +309,8 @@ function detectArchitectureChanges(commitAnalysis) {
           'After: 新しいアーキテクチャ',
           '移行プロセス',
           '得られた効果（パフォーマンス、保守性等）',
-          '学んだこと',
-        ],
+          '学んだこと'
+        ]
       });
     }
   }
@@ -367,7 +377,10 @@ function extractBugDescription(message) {
  * @returns {string}
  */
 function extractArchitectureChange(message) {
-  return message.split('\n')[0].replace(/^(feat|refactor|chore):\s*/i, '').trim();
+  return message
+    .split('\n')[0]
+    .replace(/^(feat|refactor|chore):\s*/i, '')
+    .trim();
 }
 
 /**
@@ -376,14 +389,14 @@ function extractArchitectureChange(message) {
  * @returns {Promise<Array>} 選択されたトピック
  */
 async function selectTopicsInteractive(topics) {
-  console.log('\n📚 Detected Blog Topics:\n');
+  logger.info('\n📚 Detected Blog Topics:\n');
 
   topics.forEach((topic, index) => {
-    console.log(`${index + 1}. [${topic.priority.toUpperCase()}] ${topic.title}`);
-    console.log(`   Type: ${topic.type}`);
-    console.log(`   Target: ${topic.targetAudience}`);
-    console.log(`   Est. Reading Time: ${topic.estimatedReadingTime} min`);
-    console.log('');
+    logger.info(`${index + 1}. [${topic.priority.toUpperCase()}] ${topic.title}`);
+    logger.info(`   Type: ${topic.type}`);
+    logger.info(`   Target: ${topic.targetAudience}`);
+    logger.info(`   Est. Reading Time: ${topic.estimatedReadingTime} min`);
+    logger.info('');
   });
 
   // 実際の対話的選択は generate-article.js で実装
@@ -402,7 +415,7 @@ function saveTopics(topics, outputPath) {
   }
 
   fs.writeFileSync(outputPath, JSON.stringify(topics, null, 2));
-  console.log(`\n✓ Topics saved to: ${outputPath}\n`);
+  logger.info(`\n✓ Topics saved to: ${outputPath}\n`);
 }
 
 /**
@@ -412,7 +425,7 @@ async function main() {
   const args = process.argv.slice(2);
 
   if (args.length === 0) {
-    console.error('Usage: detect-blog-topics.js <analysis-file.json>');
+    logger.error('Usage: detect-blog-topics.js <analysis-file.json>');
     process.exit(1);
   }
 
@@ -430,7 +443,7 @@ async function main() {
     const topics = detectBlogTopics(commitAnalysis);
 
     if (topics.length === 0) {
-      console.log('⚠️  No blog-worthy topics detected in this commit.');
+      logger.info('⚠️  No blog-worthy topics detected in this commit.');
       process.exit(0);
     }
 
@@ -443,9 +456,9 @@ async function main() {
     const outputPath = path.join(outputDir, `blog-topics-${timestamp}.json`);
     saveTopics(topics, outputPath);
 
-    console.log(`\n✅ Detected ${topics.length} blog topic(s)\n`);
+    logger.info(`\n✅ Detected ${topics.length} blog topic(s)\n`);
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    logger.error('❌ Error:', error.message);
     process.exit(1);
   }
 }

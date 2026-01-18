@@ -5,9 +5,17 @@
  * 未使用のAWSリソースを検出してコスト削減を提案
  */
 
-const { EC2Client, DescribeInstancesCommand, DescribeVolumesCommand, DescribeAddressesCommand } = require('@aws-sdk/client-ec2');
 const fs = require('fs');
 const path = require('path');
+const {
+  EC2Client,
+  DescribeInstancesCommand,
+  DescribeVolumesCommand,
+  DescribeAddressesCommand
+} = require('@aws-sdk/client-ec2');
+const { Logger } = require('@claude-skills/utils');
+
+const logger = new Logger('aws-cost-optimizer:unused-resource-detector');
 
 /**
  * 未使用リソースを検出
@@ -23,15 +31,15 @@ async function detectUnusedResources(options = {}) {
     region = 'us-east-1',
     allRegions = false,
     stoppedDaysThreshold = 7,
-    volumeAvailableDaysThreshold = 7,
+    volumeAvailableDaysThreshold = 7
   } = options;
 
   // 依存関係チェック
   try {
     require('@aws-sdk/client-ec2');
   } catch (error) {
-    console.error('❌ Error: AWS SDK not found');
-    console.log('Install: npm install @aws-sdk/client-ec2');
+    logger.error('❌ Error: AWS SDK not found');
+    logger.info('Install: npm install @aws-sdk/client-ec2');
     process.exit(1);
   }
 
@@ -40,23 +48,23 @@ async function detectUnusedResources(options = {}) {
     stoppedInstances: [],
     unattachedVolumes: [],
     unallocatedEIPs: [],
-    totalMonthlyCost: 0,
+    totalMonthlyCost: 0
   };
 
-  console.log(`\n🔍 Scanning for unused resources in ${regions.length} region(s)...\n`);
+  logger.info(`\n🔍 Scanning for unused resources in ${regions.length} region(s)...\n`);
 
   for (const reg of regions) {
     try {
       const regionFindings = await scanRegion(reg, {
         stoppedDaysThreshold,
-        volumeAvailableDaysThreshold,
+        volumeAvailableDaysThreshold
       });
 
       findings.stoppedInstances.push(...regionFindings.stoppedInstances);
       findings.unattachedVolumes.push(...regionFindings.unattachedVolumes);
       findings.unallocatedEIPs.push(...regionFindings.unallocatedEIPs);
     } catch (error) {
-      console.warn(`⚠️  Warning: Failed to scan region ${reg}: ${error.message}`);
+      logger.warn(`⚠️  Warning: Failed to scan region ${reg}: ${error.message}`);
     }
   }
 
@@ -79,7 +87,7 @@ async function scanRegion(region, thresholds) {
   const findings = {
     stoppedInstances: [],
     unattachedVolumes: [],
-    unallocatedEIPs: [],
+    unallocatedEIPs: []
   };
 
   try {
@@ -98,7 +106,7 @@ async function scanRegion(region, thresholds) {
               type: instance.InstanceType,
               region,
               stoppedDays,
-              monthlyCost: estimateEC2Cost(instance.InstanceType),
+              monthlyCost: estimateEC2Cost(instance.InstanceType)
             });
           }
         }
@@ -120,7 +128,7 @@ async function scanRegion(region, thresholds) {
             type: volume.VolumeType,
             region,
             availableDays,
-            monthlyCost: estimateEBSCost(volume.Size, volume.VolumeType),
+            monthlyCost: estimateEBSCost(volume.Size, volume.VolumeType)
           });
         }
       }
@@ -136,14 +144,14 @@ async function scanRegion(region, thresholds) {
           id: address.AllocationId,
           publicIp: address.PublicIp,
           region,
-          monthlyCost: 3.6, // 未割り当てEIPの月額コスト
+          monthlyCost: 3.6 // 未割り当てEIPの月額コスト
         });
       }
     });
   } catch (error) {
     if (error.name === 'CredentialsProviderError') {
-      console.error('❌ AWS credentials not configured');
-      console.log('Run: aws configure');
+      logger.error('❌ AWS credentials not configured');
+      logger.info('Run: aws configure');
       process.exit(1);
     } else {
       throw error;
@@ -159,12 +167,7 @@ async function scanRegion(region, thresholds) {
  */
 async function getAWSRegions() {
   // 簡略化のため、主要なリージョンのみを返す
-  return [
-    'us-east-1',
-    'us-west-2',
-    'eu-west-1',
-    'ap-northeast-1',
-  ];
+  return ['us-east-1', 'us-west-2', 'eu-west-1', 'ap-northeast-1'];
 }
 
 /**
@@ -206,7 +209,7 @@ function estimateEC2Cost(instanceType) {
     't3.medium': 30.37,
     'm5.large': 70.08,
     'm5.xlarge': 140.16,
-    'm5.2xlarge': 280.32,
+    'm5.2xlarge': 280.32
   };
 
   return pricing[instanceType] || 50.0; // デフォルト値
@@ -221,15 +224,15 @@ function estimateEC2Cost(instanceType) {
 function estimateEBSCost(size, volumeType) {
   // GB単価（簡略化）
   const pricePerGB = {
-    gp2: 0.10,
+    gp2: 0.1,
     gp3: 0.08,
     io1: 0.125,
     io2: 0.125,
     st1: 0.045,
-    sc1: 0.025,
+    sc1: 0.025
   };
 
-  const unitPrice = pricePerGB[volumeType] || 0.10;
+  const unitPrice = pricePerGB[volumeType] || 0.1;
   return size * unitPrice;
 }
 
@@ -261,47 +264,47 @@ function calculateTotalCost(findings) {
  * @param {Object} findings - 検出結果
  */
 function displayFindings(findings) {
-  console.log('\n📊 Unused Resources Report\n');
+  logger.info('\n📊 Unused Resources Report\n');
 
   // 停止中のEC2インスタンス
   if (findings.stoppedInstances.length > 0) {
-    console.log(`❌ Stopped EC2 Instances (${findings.stoppedInstances.length})\n`);
+    logger.info(`❌ Stopped EC2 Instances (${findings.stoppedInstances.length})\n`);
     findings.stoppedInstances.forEach((instance, index) => {
-      console.log(`${index + 1}. ${instance.id} (${instance.type})`);
-      console.log(`   - Region: ${instance.region}`);
-      console.log(`   - Stopped for: ${instance.stoppedDays} days`);
-      console.log(`   - Monthly Cost: $${instance.monthlyCost.toFixed(2)}`);
-      console.log(`   - Recommendation: ${instance.stoppedDays > 30 ? 'Terminate' : 'Review'}\n`);
+      logger.info(`${index + 1}. ${instance.id} (${instance.type})`);
+      logger.info(`   - Region: ${instance.region}`);
+      logger.info(`   - Stopped for: ${instance.stoppedDays} days`);
+      logger.info(`   - Monthly Cost: $${instance.monthlyCost.toFixed(2)}`);
+      logger.info(`   - Recommendation: ${instance.stoppedDays > 30 ? 'Terminate' : 'Review'}\n`);
     });
   }
 
   // アタッチされていないEBSボリューム
   if (findings.unattachedVolumes.length > 0) {
-    console.log(`❌ Unattached EBS Volumes (${findings.unattachedVolumes.length})\n`);
+    logger.info(`❌ Unattached EBS Volumes (${findings.unattachedVolumes.length})\n`);
     findings.unattachedVolumes.forEach((volume, index) => {
-      console.log(`${index + 1}. ${volume.id} (${volume.size}GB ${volume.type})`);
-      console.log(`   - Region: ${volume.region}`);
-      console.log(`   - Available for: ${volume.availableDays} days`);
-      console.log(`   - Monthly Cost: $${volume.monthlyCost.toFixed(2)}`);
-      console.log(`   - Recommendation: ${volume.availableDays > 30 ? 'Delete' : 'Snapshot & Delete'}\n`);
+      logger.info(`${index + 1}. ${volume.id} (${volume.size}GB ${volume.type})`);
+      logger.info(`   - Region: ${volume.region}`);
+      logger.info(`   - Available for: ${volume.availableDays} days`);
+      logger.info(`   - Monthly Cost: $${volume.monthlyCost.toFixed(2)}`);
+      logger.info(`   - Recommendation: ${volume.availableDays > 30 ? 'Delete' : 'Snapshot & Delete'}\n`);
     });
   }
 
   // 割り当てられていないElastic IP
   if (findings.unallocatedEIPs.length > 0) {
-    console.log(`❌ Unallocated Elastic IPs (${findings.unallocatedEIPs.length})\n`);
+    logger.info(`❌ Unallocated Elastic IPs (${findings.unallocatedEIPs.length})\n`);
     findings.unallocatedEIPs.forEach((eip, index) => {
-      console.log(`${index + 1}. ${eip.id} (${eip.publicIp})`);
-      console.log(`   - Region: ${eip.region}`);
-      console.log(`   - Monthly Cost: $${eip.monthlyCost.toFixed(2)}`);
-      console.log(`   - Recommendation: Release\n`);
+      logger.info(`${index + 1}. ${eip.id} (${eip.publicIp})`);
+      logger.info(`   - Region: ${eip.region}`);
+      logger.info(`   - Monthly Cost: $${eip.monthlyCost.toFixed(2)}`);
+      logger.info('   - Recommendation: Release\n');
     });
   }
 
   // 総コスト
-  console.log('\n💰 Total Potential Savings:');
-  console.log(`   - Monthly: $${findings.totalMonthlyCost.toFixed(2)}`);
-  console.log(`   - Yearly: $${findings.totalYearlyCost.toFixed(2)}\n`);
+  logger.info('\n💰 Total Potential Savings:');
+  logger.info(`   - Monthly: $${findings.totalMonthlyCost.toFixed(2)}`);
+  logger.info(`   - Yearly: $${findings.totalYearlyCost.toFixed(2)}\n`);
 }
 
 /**
@@ -336,9 +339,9 @@ async function main() {
     const outputPath = path.join(reportsDir, `unused-resources-${timestamp}.json`);
     fs.writeFileSync(outputPath, JSON.stringify(findings, null, 2));
 
-    console.log(`✓ Report saved to: ${outputPath}\n`);
+    logger.info(`✓ Report saved to: ${outputPath}\n`);
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    logger.error('❌ Error:', error.message);
     process.exit(1);
   }
 }

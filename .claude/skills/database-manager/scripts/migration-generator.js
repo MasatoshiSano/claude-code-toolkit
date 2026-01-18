@@ -7,6 +7,9 @@
 
 const fs = require('fs');
 const path = require('path');
+const { Logger } = require('@claude-skills/utils');
+
+const logger = new Logger('database-manager:migration-generator');
 
 /**
  * マイグレーションを生成
@@ -21,11 +24,11 @@ async function generateMigration(options) {
 
   // ORMチェック
   if (!['prisma', 'typeorm'].includes(orm)) {
-    console.error('❌ Error: Unsupported ORM. Use "prisma" or "typeorm"');
+    logger.error('❌ Error: Unsupported ORM. Use "prisma" or "typeorm"');
     process.exit(1);
   }
 
-  console.log(`\n📝 Generating ${orm} migration for action: ${action}\n`);
+  logger.info(`\n📝 Generating ${orm} migration for action: ${action}\n`);
 
   let migrationContent;
   let fileName;
@@ -43,7 +46,7 @@ async function generateMigration(options) {
     orm,
     action,
     fileName,
-    content: migrationContent,
+    content: migrationContent
   };
 }
 
@@ -56,7 +59,7 @@ async function generateMigration(options) {
 function generatePrismaMigration(action, config) {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
   let content = '';
-  let fileName = `${timestamp}_${action}.sql`;
+  const fileName = `${timestamp}_${action}.sql`;
 
   switch (action) {
     case 'create-table':
@@ -87,7 +90,7 @@ function generatePrismaMigration(action, config) {
 function generateTypeORMMigration(action, config) {
   const timestamp = Date.now();
   const className = `${capitalizeFirst(action.replace(/-/g, ''))}${timestamp}`;
-  let fileName = `${timestamp}-${action}.ts`;
+  const fileName = `${timestamp}-${action}.ts`;
 
   let content = `import { MigrationInterface, QueryRunner } from "typeorm";
 
@@ -111,7 +114,7 @@ export class ${className} implements MigrationInterface {
       content += generateTypeORMAddForeignKey(config);
       break;
     default:
-      content += `        // TODO: Add migration logic here\n`;
+      content += '        // TODO: Add migration logic here\n';
   }
 
   content += `    }
@@ -136,13 +139,13 @@ function generatePrismaCreateTable(config) {
   const defaultColumns = [
     { name: 'id', type: 'SERIAL', constraints: 'PRIMARY KEY' },
     { name: 'created_at', type: 'TIMESTAMP', constraints: 'NOT NULL DEFAULT NOW()' },
-    { name: 'updated_at', type: 'TIMESTAMP', constraints: 'NOT NULL DEFAULT NOW()' },
+    { name: 'updated_at', type: 'TIMESTAMP', constraints: 'NOT NULL DEFAULT NOW()' }
   ];
 
   const allColumns = [...defaultColumns, ...columns];
 
   const columnDefs = allColumns
-    .map((col) => `    ${col.name} ${col.type}${col.constraints ? ' ' + col.constraints : ''}`)
+    .map((col) => `    ${col.name} ${col.type}${col.constraints ? ` ${col.constraints}` : ''}`)
     .join(',\n');
 
   return `-- CreateTable
@@ -161,11 +164,16 @@ CREATE INDEX "${tableName}_created_at_idx" ON "${tableName}"("created_at");
  * @returns {string} SQL
  */
 function generatePrismaAddColumn(config) {
-  const { tableName = 'example_table', columnName = 'new_column', columnType = 'VARCHAR(255)', constraints = '' } = config;
+  const {
+    tableName = 'example_table',
+    columnName = 'new_column',
+    columnType = 'VARCHAR(255)',
+    constraints = ''
+  } = config;
 
   return `-- AddColumn
 ALTER TABLE "${tableName}"
-ADD COLUMN "${columnName}" ${columnType}${constraints ? ' ' + constraints : ''};
+ADD COLUMN "${columnName}" ${columnType}${constraints ? ` ${constraints}` : ''};
 `;
 }
 
@@ -194,7 +202,7 @@ function generatePrismaAddForeignKey(config) {
     columnName = 'foreign_id',
     referencedTable = 'referenced_table',
     referencedColumn = 'id',
-    onDelete = 'CASCADE',
+    onDelete = 'CASCADE'
   } = config;
 
   const constraintName = `${tableName}_${columnName}_fkey`;
@@ -291,7 +299,7 @@ function generateTypeORMAddForeignKey(config) {
     tableName = 'example_table',
     columnName = 'foreign_id',
     referencedTable = 'referenced_table',
-    referencedColumn = 'id',
+    referencedColumn = 'id'
   } = config;
 
   return `        await queryRunner.createForeignKey(
@@ -330,11 +338,11 @@ function saveMigration(migration, outputDir) {
   const filePath = path.join(dir, migration.fileName);
   fs.writeFileSync(filePath, migration.content);
 
-  console.log(`✓ Migration file created: ${filePath}\n`);
-  console.log('Preview:');
-  console.log('─'.repeat(60));
-  console.log(migration.content);
-  console.log('─'.repeat(60));
+  logger.info(`✓ Migration file created: ${filePath}\n`);
+  logger.info('Preview:');
+  logger.info('─'.repeat(60));
+  logger.debug(migration.content);
+  logger.info('─'.repeat(60));
 }
 
 /**
@@ -344,14 +352,16 @@ async function main() {
   const args = process.argv.slice(2);
 
   if (args.length === 0) {
-    console.log('Usage: node migration-generator.js --orm=<prisma|typeorm> --action=<action> [--table=<name>] [--output=<dir>]');
-    console.log('\nActions:');
-    console.log('  create-table    Create a new table');
-    console.log('  add-column      Add a column to existing table');
-    console.log('  add-index       Add an index');
-    console.log('  add-foreign-key Add a foreign key constraint');
-    console.log('\nExample:');
-    console.log('  node migration-generator.js --orm=prisma --action=create-table --table=users');
+    logger.info(
+      'Usage: node migration-generator.js --orm=<prisma|typeorm> --action=<action> [--table=<name>] [--output=<dir>]'
+    );
+    logger.info('\nActions:');
+    logger.info('  create-table    Create a new table');
+    logger.info('  add-column      Add a column to existing table');
+    logger.info('  add-index       Add an index');
+    logger.info('  add-foreign-key Add a foreign key constraint');
+    logger.info('\nExample:');
+    logger.info('  node migration-generator.js --orm=prisma --action=create-table --table=users');
     process.exit(0);
   }
 
@@ -378,7 +388,7 @@ async function main() {
     const migration = await generateMigration(options);
     saveMigration(migration, outputDir);
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    logger.error('❌ Error:', error);
     process.exit(1);
   }
 }

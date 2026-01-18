@@ -20,10 +20,9 @@ requires:
 
 ## 実装状況
 
-**ステータス**: ✅ Phase 1完了
-**実装日**: 2026-01-17
-**動作保証**: 基本機能
+**ステータス**: ✅ Phase 1完了 **実装日**: 2026-01-17 **動作保証**: 基本機能
 **実装済み機能**:
+
 - ✅ コスト分析（cost-analyzer.js）
 - ✅ 未使用リソース検出（unused-resource-detector.js）
 - ✅ Markdownレポート生成（report-generator.js）
@@ -31,20 +30,23 @@ requires:
 - ✅ 閾値設定（thresholds.json）
 
 **未実装機能**（Phase 2以降で実装予定）:
+
 - 🚧 Right-Sizing分析（right-sizing-analyzer.js）
 - 🚧 RI/Savings Plans提案（ri-savings-plan-advisor.js）
 - 🚧 タグベースコスト配分（tag-cost-allocator.js）
 
 **動作要件**:
+
 - AWS CLI設定済み（`aws configure`）
 - Cost Explorer API有効化
 - IAM権限: `ce:GetCostAndUsage`, `ec2:Describe*`
-- Node.js依存パッケージ: `npm install @aws-sdk/client-cost-explorer @aws-sdk/client-ec2`
+- Node.js依存パッケージ:
+  `npm install @aws-sdk/client-cost-explorer @aws-sdk/client-ec2`
 
 ## Purpose
 
-このスキルは、AWSコストを分析し、具体的な削減提案を行います。
-未使用リソースの検出、適切なインスタンスタイプの推奨、Reserved Instance/Savings Plansの提案を自動化します。
+このスキルは、AWSコストを分析し、具体的な削減提案を行います。未使用リソースの検出、適切なインスタンスタイプの推奨、Reserved
+Instance/Savings Plansの提案を自動化します。
 
 ## When to Use
 
@@ -227,11 +229,11 @@ async function detectUnusedResources() {
 
   // EC2インスタンス
   const stoppedInstances = await findStoppedEC2Instances();
-  findings.push(...stoppedInstances.filter(i => i.stoppedDays > 7));
+  findings.push(...stoppedInstances.filter((i) => i.stoppedDays > 7));
 
   // EBSボリューム
   const unattachedVolumes = await findUnattachedEBSVolumes();
-  findings.push(...unattachedVolumes.filter(v => v.availableDays > 7));
+  findings.push(...unattachedVolumes.filter((v) => v.availableDays > 7));
 
   // Elastic IP
   const unallocatedEIPs = await findUnallocatedElasticIPs();
@@ -239,11 +241,11 @@ async function detectUnusedResources() {
 
   // Load Balancers
   const idleLoadBalancers = await findIdleLoadBalancers();
-  findings.push(...idleLoadBalancers.filter(lb => lb.idleDays > 7));
+  findings.push(...idleLoadBalancers.filter((lb) => lb.idleDays > 7));
 
   // RDS Snapshots
   const oldSnapshots = await findOldRDSSnapshots();
-  findings.push(...oldSnapshots.filter(s => s.ageDays > 90));
+  findings.push(...oldSnapshots.filter((s) => s.ageDays > 90));
 
   // NAT Gateway (使用率が低い)
   const underutilizedNAT = await findUnderutilizedNATGateways();
@@ -261,7 +263,11 @@ async function cleanupUnusedResources(findings, options) {
 
   for (const finding of findings) {
     if (options.dryRun) {
-      results.push({ resource: finding.id, action: 'would delete', status: 'dry-run' });
+      results.push({
+        resource: finding.id,
+        action: 'would delete',
+        status: 'dry-run'
+      });
       continue;
     }
 
@@ -270,7 +276,11 @@ async function cleanupUnusedResources(findings, options) {
         case 'ec2-instance':
           if (finding.stoppedDays > options.ec2TerminateAfterDays) {
             await terminateEC2Instance(finding.id);
-            results.push({ resource: finding.id, action: 'terminated', status: 'success' });
+            results.push({
+              resource: finding.id,
+              action: 'terminated',
+              status: 'success'
+            });
           }
           break;
 
@@ -279,26 +289,47 @@ async function cleanupUnusedResources(findings, options) {
             await createSnapshot(finding.id);
           }
           await deleteVolume(finding.id);
-          results.push({ resource: finding.id, action: 'deleted', status: 'success' });
+          results.push({
+            resource: finding.id,
+            action: 'deleted',
+            status: 'success'
+          });
           break;
 
         case 'elastic-ip':
           await releaseElasticIP(finding.id);
-          results.push({ resource: finding.id, action: 'released', status: 'success' });
+          results.push({
+            resource: finding.id,
+            action: 'released',
+            status: 'success'
+          });
           break;
 
         case 'load-balancer':
           await deleteLoadBalancer(finding.id);
-          results.push({ resource: finding.id, action: 'deleted', status: 'success' });
+          results.push({
+            resource: finding.id,
+            action: 'deleted',
+            status: 'success'
+          });
           break;
 
         case 'rds-snapshot':
           await deleteDBSnapshot(finding.id);
-          results.push({ resource: finding.id, action: 'deleted', status: 'success' });
+          results.push({
+            resource: finding.id,
+            action: 'deleted',
+            status: 'success'
+          });
           break;
       }
     } catch (error) {
-      results.push({ resource: finding.id, action: 'failed', status: 'error', error: error.message });
+      results.push({
+        resource: finding.id,
+        action: 'failed',
+        status: 'error',
+        error: error.message
+      });
     }
   }
 
@@ -554,8 +585,10 @@ agent aws-cost-optimizer generate-report \
 ```
 
 **生成されたレポート:**
+
 ```markdown
 # AWS Cost Optimization Report
+
 Generated: 2025-01-16
 
 ## Executive Summary
@@ -567,11 +600,13 @@ Generated: 2025-01-16
 ## Cost Breakdown
 
 ### By Service
+
 1. EC2: $4,230 (34%) - High optimization potential
 2. RDS: $2,890 (23%) - Moderate optimization potential
 3. S3: $1,450 (12%) - Well optimized
 
 ### By Environment
+
 - Production: $8,960 (72%)
 - Staging: $2,340 (19%)
 - Development: $1,150 (9%)
@@ -579,29 +614,35 @@ Generated: 2025-01-16
 ## Optimization Recommendations
 
 ### Priority 1: Quick Wins ($1,234/month)
+
 1. Terminate 5 stopped EC2 instances
 2. Delete 12 unattached EBS volumes
 3. Release 3 unused Elastic IPs
 
 ### Priority 2: Right-Sizing ($3,245/month)
+
 1. Downsize 12 over-provisioned EC2 instances
 2. Migrate 2 RDS instances to Aurora Serverless
 
 ### Priority 3: Commitments ($755/month)
+
 1. Purchase 3-Year Compute Savings Plan
 2. Buy RDS Reserved Instances
 
 ## Implementation Plan
 
 ### Week 1
+
 - Cleanup unused resources
 - Expected savings: $1,234/month
 
 ### Week 2
+
 - Right-size EC2 instances
 - Expected savings: $3,245/month
 
 ### Week 3
+
 - Implement Savings Plans
 - Expected savings: $755/month
 

@@ -1,16 +1,8 @@
 {
   "version": "1.0.0",
   "description": "Database configuration for database-manager skill",
-  "supported_databases": [
-    "postgresql",
-    "mysql",
-    "sqlite",
-    "mongodb"
-  ],
-  "supported_orms": [
-    "prisma",
-    "typeorm"
-  ],
+  "supported_databases": ["postgresql", "mysql", "sqlite", "mongodb"],
+  "supported_orms": ["prisma", "typeorm"],
   "connection": {
     "poolSize": {
       "min": 2,
@@ -42,11 +34,7 @@
       "indexes": "idx_{table}_{columns}",
       "foreignKeys": "{table}_{column}_fkey"
     },
-    "requiredFields": [
-      "id",
-      "created_at",
-      "updated_at"
-    ],
+    "requiredFields": ["id", "created_at", "updated_at"],
     "timestamps": {
       "createdAt": "created_at",
       "updatedAt": "updated_at",

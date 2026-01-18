@@ -3,6 +3,7 @@
 ## Example 1: Creating New Feature Specification
 
 ### Input
+
 ```
 Task: "Implement user authentication with email/password"
 ```
@@ -10,6 +11,7 @@ Task: "Implement user authentication with email/password"
 ### Execution Flow
 
 **Stage 1: Requirements**
+
 ```bash
 Agent analyzes the task and generates:
 .tmp/requirements.md with:
@@ -20,6 +22,7 @@ Agent analyzes the task and generates:
 ```
 
 **Stage 2: Design**
+
 ```bash
 Agent reads requirements.md and generates:
 .tmp/design.md with:
@@ -30,6 +33,7 @@ Agent reads requirements.md and generates:
 ```
 
 **Stage 3: Tasks**
+
 ```bash
 Agent reads design.md and generates:
 .tmp/tasks.md with:
@@ -43,12 +47,15 @@ Total: 15 tasks, estimated 20 hours
 ## Example 2: Adding Feature to Existing Project
 
 ### Context
+
 Existing documents:
+
 - requirements.md: User profile management
 - design.md: ProfileController, ProfileView components
 - tasks.md: Profile CRUD operations (completed)
 
 ### Input
+
 ```
 Task: "Add avatar upload functionality to user profile"
 ```
@@ -56,6 +63,7 @@ Task: "Add avatar upload functionality to user profile"
 ### Execution Flow
 
 **Stage 1: Requirements Update**
+
 ```bash
 Agent reads existing requirements.md and updates:
 - Adds "アバターアップロード機能" to section 2.1 with date
@@ -65,6 +73,7 @@ Agent reads existing requirements.md and updates:
 ```
 
 **Stage 2: Design Update**
+
 ```bash
 Agent reads existing design.md and updates:
 - Adds ImageUploadComponent to component list
@@ -75,6 +84,7 @@ Agent reads existing design.md and updates:
 ```
 
 **Stage 3: Tasks Addition**
+
 ```bash
 Agent reads existing tasks.md and adds:
 - New section under "🚧 進行中の機能"
@@ -89,11 +99,13 @@ Total: 8 tasks, estimated 10 hours
 ## Example 3: Handling Unclear Requirements
 
 ### Input
+
 ```
 Task: "Make the app faster"
 ```
 
 ### Agent Response
+
 ```
 ❌ Requirements too vague. Asking clarifying questions:
 
@@ -142,6 +154,7 @@ User runs: "Generate design"
 ## Best Practices Demonstrated
 
 ### 1. Always Get User Approval Between Stages
+
 ```
 Stage 1 Complete → Show requirements → Wait for approval
 Stage 2 Complete → Show design → Wait for approval
@@ -149,18 +162,21 @@ Stage 3 Complete → Show tasks → Ready to implement
 ```
 
 ### 2. Incremental Updates Preserve History
+
 ```
 ❌ Bad: Overwrite existing requirements.md
 ✅ Good: Merge new feature, add to 改訂履歴 with date
 ```
 
 ### 3. Tasks are Commit-Sized
+
 ```
 ❌ Bad: "Implement authentication" (8 hours, unclear)
 ✅ Good: "Setup bcrypt library" (30 mins, clear completion)
 ```
 
 ### 4. Clear Dependencies
+
 ```
 Task 2.1: Create User Model
 Task 2.2: Create Auth Controller (depends on 2.1)

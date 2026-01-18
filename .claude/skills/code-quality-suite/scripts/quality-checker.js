@@ -5,9 +5,12 @@
  * コード品質をチェック（構文エラー、複雑度、ベストプラクティス）
  */
 
+const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const { Logger } = require('@claude-skills/utils');
+
+const logger = new Logger('code-quality-suite:quality-checker');
 
 /**
  * コード品質をチェック
@@ -19,13 +22,13 @@ const { execSync } = require('child_process');
 async function checkQuality(options = {}) {
   const { directory = '.', extensions = ['.js', '.ts', '.jsx', '.tsx'] } = options;
 
-  console.log(`\n🔍 Checking code quality in: ${directory}\n`);
+  logger.info(`\n🔍 Checking code quality in: ${directory}\n`);
 
   const results = {
     linting: await runLinting(directory),
     typescript: await runTypeScript(directory),
     complexity: analyzeComplexity(directory, extensions),
-    summary: null,
+    summary: null
   };
 
   results.summary = generateSummary(results);
@@ -47,14 +50,14 @@ async function runLinting(directory) {
       return {
         status: 'skipped',
         reason: 'ESLint not found',
-        suggestion: 'Install: npm install -D eslint',
+        suggestion: 'Install: npm install -D eslint'
       };
     }
 
     // ESLintを実行
     const output = execSync(`npx eslint ${directory} --format json`, {
       encoding: 'utf8',
-      stdio: ['pipe', 'pipe', 'ignore'], // stderrを無視
+      stdio: ['pipe', 'pipe', 'ignore'] // stderrを無視
     });
 
     const results = JSON.parse(output);
@@ -67,7 +70,7 @@ async function runLinting(directory) {
       errorCount,
       warningCount,
       files: results.length,
-      details: results.slice(0, 5), // 最初の5ファイルのみ
+      details: results.slice(0, 5) // 最初の5ファイルのみ
     };
   } catch (error) {
     // ESLintエラー（構文エラー等）がある場合
@@ -81,12 +84,12 @@ async function runLinting(directory) {
         errorCount,
         warningCount,
         files: results.length,
-        details: results.filter((f) => f.errorCount > 0).slice(0, 5),
+        details: results.filter((f) => f.errorCount > 0).slice(0, 5)
       };
     } catch {
       return {
         status: 'error',
-        error: error.message,
+        error: error.message
       };
     }
   }
@@ -97,7 +100,7 @@ async function runLinting(directory) {
  * @param {string} directory - チェックするディレクトリ
  * @returns {Promise<Object>} TypeScript結果
  */
-async function runTypeScript(directory) {
+async function runTypeScript(_directory) {
   try {
     // tscがインストールされているか確認
     try {
@@ -105,7 +108,7 @@ async function runTypeScript(directory) {
     } catch {
       return {
         status: 'skipped',
-        reason: 'TypeScript not found',
+        reason: 'TypeScript not found'
       };
     }
 
@@ -113,7 +116,7 @@ async function runTypeScript(directory) {
     if (!fs.existsSync('tsconfig.json')) {
       return {
         status: 'skipped',
-        reason: 'tsconfig.json not found',
+        reason: 'tsconfig.json not found'
       };
     }
 
@@ -122,7 +125,7 @@ async function runTypeScript(directory) {
 
     return {
       status: 'success',
-      errorCount: 0,
+      errorCount: 0
     };
   } catch (error) {
     // TypeScriptエラーがある場合
@@ -132,7 +135,7 @@ async function runTypeScript(directory) {
     return {
       status: 'completed_with_errors',
       errorCount: errorLines.length,
-      errors: errorLines.slice(0, 10), // 最初の10エラーのみ
+      errors: errorLines.slice(0, 10) // 最初の10エラーのみ
     };
   }
 }
@@ -175,7 +178,7 @@ function analyzeComplexity(directory, extensions) {
   } catch (error) {
     return {
       status: 'error',
-      error: error.message,
+      error: error.message
     };
   }
 
@@ -183,7 +186,7 @@ function analyzeComplexity(directory, extensions) {
     status: 'success',
     fileCount,
     totalLines,
-    averageLinesPerFile: fileCount > 0 ? Math.round(totalLines / fileCount) : 0,
+    averageLinesPerFile: fileCount > 0 ? Math.round(totalLines / fileCount) : 0
   };
 }
 
@@ -195,7 +198,7 @@ function analyzeComplexity(directory, extensions) {
 function generateSummary(results) {
   const issues = {
     errors: 0,
-    warnings: 0,
+    warnings: 0
   };
 
   if (results.linting.errorCount) issues.errors += results.linting.errorCount;
@@ -219,7 +222,7 @@ function generateSummary(results) {
     rating,
     totalIssues,
     errors: issues.errors,
-    warnings: issues.warnings,
+    warnings: issues.warnings
   };
 }
 
@@ -228,39 +231,41 @@ function generateSummary(results) {
  * @param {Object} results - チェック結果
  */
 function displayResults(results) {
-  console.log('\n📊 Code Quality Report\n');
-  console.log(`Overall Score: ${results.summary.score}/100 (${results.summary.rating.toUpperCase()})\n`);
+  logger.info('\n📊 Code Quality Report\n');
+  logger.info(`Overall Score: ${results.summary.score}/100 (${results.summary.rating.toUpperCase()})\n`);
 
   // Linting
-  console.log('ESLint:');
+  logger.info('ESLint:');
   if (results.linting.status === 'skipped') {
-    console.log(`  ⚠️  ${results.linting.reason}`);
+    logger.info(`  ⚠️  ${results.linting.reason}`);
     if (results.linting.suggestion) {
-      console.log(`      ${results.linting.suggestion}`);
+      logger.info(`      ${results.linting.suggestion}`);
     }
   } else {
-    console.log(`  Errors: ${results.linting.errorCount}`);
-    console.log(`  Warnings: ${results.linting.warningCount}`);
-    console.log(`  Files checked: ${results.linting.files}\n`);
+    logger.info(`  Errors: ${results.linting.errorCount}`);
+    logger.info(`  Warnings: ${results.linting.warningCount}`);
+    logger.info(`  Files checked: ${results.linting.files}\n`);
   }
 
   // TypeScript
-  console.log('TypeScript:');
+  logger.info('TypeScript:');
   if (results.typescript.status === 'skipped') {
-    console.log(`  ⚠️  ${results.typescript.reason}\n`);
+    logger.info(`  ⚠️  ${results.typescript.reason}\n`);
   } else {
-    console.log(`  Errors: ${results.typescript.errorCount}\n`);
+    logger.info(`  Errors: ${results.typescript.errorCount}\n`);
   }
 
   // Complexity
-  console.log('Code Metrics:');
-  console.log(`  Files: ${results.complexity.fileCount}`);
-  console.log(`  Total Lines: ${results.complexity.totalLines}`);
-  console.log(`  Avg Lines/File: ${results.complexity.averageLinesPerFile}\n`);
+  logger.info('Code Metrics:');
+  logger.info(`  Files: ${results.complexity.fileCount}`);
+  logger.info(`  Total Lines: ${results.complexity.totalLines}`);
+  logger.info(`  Avg Lines/File: ${results.complexity.averageLinesPerFile}\n`);
 
   // Summary
-  console.log('Summary:');
-  console.log(`  Total Issues: ${results.summary.totalIssues} (${results.summary.errors} errors, ${results.summary.warnings} warnings)\n`);
+  logger.info('Summary:');
+  logger.info(
+    `  Total Issues: ${results.summary.totalIssues} (${results.summary.errors} errors, ${results.summary.warnings} warnings)\n`
+  );
 }
 
 /**
@@ -290,14 +295,14 @@ async function main() {
     const outputPath = path.join(outputDir, `quality-check-${timestamp}.json`);
     fs.writeFileSync(outputPath, JSON.stringify(results, null, 2));
 
-    console.log(`✓ Report saved to: ${outputPath}\n`);
+    logger.info(`✓ Report saved to: ${outputPath}\n`);
 
     // エラーがある場合は終了コード1で終了
     if (results.summary.errors > 0) {
       process.exit(1);
     }
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    logger.error('❌ Error:', error.message);
     process.exit(1);
   }
 }

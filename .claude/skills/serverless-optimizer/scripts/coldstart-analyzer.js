@@ -5,10 +5,12 @@
  * Lambda関数のコールドスタートを分析し、削減策を提案
  */
 
-const { LambdaClient, ListFunctionsCommand, GetFunctionCommand } = require('@aws-sdk/client-lambda');
-const { CloudWatchLogsClient, FilterLogEventsCommand } = require('@aws-sdk/client-cloudwatch-logs');
 const fs = require('fs');
 const path = require('path');
+const { Logger } = require('@claude-skills/utils');
+const { LambdaClient, ListFunctionsCommand, GetFunctionCommand } = require('@aws-sdk/client-lambda');
+
+const logger = new Logger('serverless-optimizer:coldstart-analyzer');
 
 /**
  * コールドスタートを分析
@@ -24,16 +26,15 @@ async function analyzeColdStarts(options = {}) {
   // 依存関係チェック
   try {
     require('@aws-sdk/client-lambda');
-    require('@aws-sdk/client-cloudwatch-logs');
   } catch (error) {
-    console.error('❌ Error: AWS SDK not found');
-    console.log('Install: npm install @aws-sdk/client-lambda @aws-sdk/client-cloudwatch-logs');
+    logger.error('❌ Error: AWS SDK not found');
+    logger.info('Install: npm install @aws-sdk/client-lambda');
     process.exit(1);
   }
 
   const lambdaClient = new LambdaClient({ region });
 
-  console.log(`\n🔍 Analyzing cold starts for Lambda functions...\n`);
+  logger.info('\n🔍 Analyzing cold starts for Lambda functions...\n');
 
   try {
     const functions = await getFunctions(lambdaClient, functionName);
@@ -46,12 +47,12 @@ async function analyzeColdStarts(options = {}) {
 
     return {
       analyzedFunctions: functions.length,
-      analyses,
+      analyses
     };
   } catch (error) {
     if (error.name === 'CredentialsProviderError') {
-      console.error('❌ AWS credentials not configured');
-      console.log('Run: aws configure');
+      logger.error('❌ AWS credentials not configured');
+      logger.info('Run: aws configure');
       process.exit(1);
     } else {
       throw error;
@@ -83,7 +84,7 @@ async function getFunctions(lambdaClient, functionName) {
  * @param {number} periodDays - 分析期間
  * @returns {Promise<Object>} 分析結果
  */
-async function analyzeFunctionColdStarts(func, periodDays) {
+async function analyzeFunctionColdStarts(func, _periodDays) {
   const functionName = func.FunctionName;
 
   // コールドスタート検出（簡略化）
@@ -99,7 +100,7 @@ async function analyzeFunctionColdStarts(func, periodDays) {
     memorySize: func.MemorySize,
     timeout: func.Timeout,
     coldStartData,
-    recommendations,
+    recommendations
   };
 }
 
@@ -115,9 +116,9 @@ function estimateColdStartData(func) {
     'nodejs20.x': 150,
     'python3.11': 180,
     'python3.12': 150,
-    'java17': 2000,
-    'java21': 1800,
-    'dotnet8': 1200,
+    java17: 2000,
+    java21: 1800,
+    dotnet8: 1200
   };
 
   const baseColdStart = runtimeColdStartTimes[func.Runtime] || 500;
@@ -128,7 +129,7 @@ function estimateColdStartData(func) {
   return {
     estimatedColdStartMs: Math.round(baseColdStart * memoryfactor),
     frequency: 'estimated-medium', // low/medium/high
-    impact: calculateColdStartImpact(baseColdStart * memoryfactor),
+    impact: calculateColdStartImpact(baseColdStart * memoryfactor)
   };
 }
 
@@ -158,7 +159,7 @@ function generateColdStartRecommendations(func, coldStartData) {
       type: 'runtime-optimization',
       priority: 'high',
       description: 'Consider using GraalVM native image or migrate to faster runtime (Node.js/Python)',
-      estimatedImprovement: '70-90% reduction',
+      estimatedImprovement: '70-90% reduction'
     });
   }
 
@@ -168,7 +169,7 @@ function generateColdStartRecommendations(func, coldStartData) {
       type: 'provisioned-concurrency',
       priority: 'medium',
       description: 'Enable Provisioned Concurrency for consistent performance',
-      estimatedCost: '$13.50/month per instance',
+      estimatedCost: '$13.50/month per instance'
     });
   }
 
@@ -177,7 +178,7 @@ function generateColdStartRecommendations(func, coldStartData) {
     type: 'lambda-layers',
     priority: 'low',
     description: 'Move common dependencies to Lambda Layers to reduce package size',
-    estimatedImprovement: '20-40% reduction',
+    estimatedImprovement: '20-40% reduction'
   });
 
   // メモリサイズの推奨
@@ -186,7 +187,7 @@ function generateColdStartRecommendations(func, coldStartData) {
       type: 'increase-memory',
       priority: 'low',
       description: 'Increase memory to 1024MB or higher for faster cold starts (more CPU)',
-      estimatedImprovement: '15-30% reduction',
+      estimatedImprovement: '15-30% reduction'
     });
   }
 
@@ -198,28 +199,28 @@ function generateColdStartRecommendations(func, coldStartData) {
  * @param {Object} results - 分析結果
  */
 function displayResults(results) {
-  console.log('\n📊 Cold Start Analysis Results\n');
-  console.log(`Analyzed Functions: ${results.analyzedFunctions}\n`);
+  logger.info('\n📊 Cold Start Analysis Results\n');
+  logger.info(`Analyzed Functions: ${results.analyzedFunctions}\n`);
 
   results.analyses.forEach((analysis, index) => {
-    console.log(`${index + 1}. ${analysis.functionName}`);
-    console.log(`   Runtime: ${analysis.runtime}`);
-    console.log(`   Memory: ${analysis.memorySize}MB`);
-    console.log(`   Estimated Cold Start: ${analysis.coldStartData.estimatedColdStartMs}ms`);
-    console.log(`   Impact: ${analysis.coldStartData.impact}\n`);
+    logger.info(`${index + 1}. ${analysis.functionName}`);
+    logger.info(`   Runtime: ${analysis.runtime}`);
+    logger.info(`   Memory: ${analysis.memorySize}MB`);
+    logger.info(`   Estimated Cold Start: ${analysis.coldStartData.estimatedColdStartMs}ms`);
+    logger.info(`   Impact: ${analysis.coldStartData.impact}\n`);
 
     if (analysis.recommendations.length > 0) {
-      console.log('   Recommendations:');
+      logger.info('   Recommendations:');
       analysis.recommendations.forEach((rec) => {
-        console.log(`   - [${rec.priority.toUpperCase()}] ${rec.description}`);
+        logger.info(`   - [${rec.priority.toUpperCase()}] ${rec.description}`);
         if (rec.estimatedImprovement) {
-          console.log(`     Improvement: ${rec.estimatedImprovement}`);
+          logger.info(`     Improvement: ${rec.estimatedImprovement}`);
         }
         if (rec.estimatedCost) {
-          console.log(`     Cost: ${rec.estimatedCost}`);
+          logger.info(`     Cost: ${rec.estimatedCost}`);
         }
       });
-      console.log('');
+      logger.info('');
     }
   });
 }
@@ -255,9 +256,9 @@ async function main() {
     const outputPath = path.join(outputDir, `coldstart-analysis-${timestamp}.json`);
     fs.writeFileSync(outputPath, JSON.stringify(results, null, 2));
 
-    console.log(`✓ Report saved to: ${outputPath}\n`);
+    logger.info(`✓ Report saved to: ${outputPath}\n`);
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    logger.error('❌ Error:', error.message);
     process.exit(1);
   }
 }

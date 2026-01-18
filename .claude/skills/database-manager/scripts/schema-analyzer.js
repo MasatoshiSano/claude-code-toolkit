@@ -7,6 +7,9 @@
 
 const fs = require('fs');
 const path = require('path');
+const { Logger } = require('@claude-skills/utils');
+
+const logger = new Logger('database-manager:schema-analyzer');
 
 /**
  * スキーマを分析
@@ -19,12 +22,12 @@ async function analyzeSchema(options) {
   const { orm = 'prisma', schemaPath } = options;
 
   if (!schemaPath || !fs.existsSync(schemaPath)) {
-    console.error('❌ Error: Schema file not found');
-    console.log('Provide a valid schema file path using --schema=<path>');
+    logger.error('❌ Error: Schema file not found');
+    logger.info('Provide a valid schema file path using --schema=<path>');
     process.exit(1);
   }
 
-  console.log(`\n🔍 Analyzing ${orm} schema...\n`);
+  logger.info(`\n🔍 Analyzing ${orm} schema...\n`);
 
   const schemaContent = fs.readFileSync(schemaPath, 'utf8');
 
@@ -37,7 +40,7 @@ async function analyzeSchema(options) {
       analysis = analyzeTypeORMSchema(schemaContent);
       break;
     default:
-      console.error('❌ Error: Unsupported ORM');
+      logger.error('❌ Error: Unsupported ORM');
       process.exit(1);
   }
 
@@ -69,14 +72,14 @@ function analyzePrismaSchema(schemaContent) {
         name: fieldMatch[1],
         type: fieldMatch[2],
         isArray: !!fieldMatch[3],
-        attributes: fieldMatch[4] || '',
+        attributes: fieldMatch[4] || ''
       });
     }
 
     models.push({
       name: modelName,
       fields,
-      fieldCount: fields.length,
+      fieldCount: fields.length
     });
   }
 
@@ -88,7 +91,7 @@ function analyzePrismaSchema(schemaContent) {
     modelCount: models.length,
     models,
     recommendations,
-    summary: generateSummary(models, recommendations),
+    summary: generateSummary(models, recommendations)
   };
 }
 
@@ -106,7 +109,7 @@ function analyzeTypeORMSchema(schemaContent) {
   while ((match = entityRegex.exec(schemaContent)) !== null) {
     entities.push({
       name: match[1],
-      fields: [], // 実際にはフィールドも解析
+      fields: [] // 実際にはフィールドも解析
     });
   }
 
@@ -117,7 +120,7 @@ function analyzeTypeORMSchema(schemaContent) {
     entityCount: entities.length,
     entities,
     recommendations,
-    summary: generateSummary(entities, recommendations),
+    summary: generateSummary(entities, recommendations)
   };
 }
 
@@ -140,7 +143,7 @@ function generatePrismaRecommendations(models) {
         type: 'missing-timestamps',
         severity: 'low',
         description: 'Add createdAt and updatedAt timestamp fields',
-        suggestion: `Add @default(now()) and @updatedAt attributes`,
+        suggestion: 'Add @default(now()) and @updatedAt attributes'
       });
     }
 
@@ -153,7 +156,7 @@ function generatePrismaRecommendations(models) {
         type: 'missing-indexes',
         severity: 'medium',
         description: 'Consider adding indexes for frequently queried fields',
-        suggestion: 'Add @@index([fieldName]) for commonly queried fields',
+        suggestion: 'Add @@index([fieldName]) for commonly queried fields'
       });
     }
 
@@ -168,7 +171,7 @@ function generatePrismaRecommendations(models) {
           type: 'missing-cascade',
           severity: 'medium',
           description: 'Specify onDelete behavior for foreign key',
-          suggestion: 'Add onDelete: Cascade or onDelete: SetNull',
+          suggestion: 'Add onDelete: Cascade or onDelete: SetNull'
         });
       }
     });
@@ -191,7 +194,7 @@ function generateTypeORMRecommendations(entities) {
       type: 'no-entities',
       severity: 'info',
       description: 'No entities found in schema',
-      suggestion: 'Create entity classes with @Entity() decorator',
+      suggestion: 'Create entity classes with @Entity() decorator'
     });
   }
 
@@ -208,14 +211,14 @@ function generateSummary(items, recommendations) {
   const severityCounts = {
     high: recommendations.filter((r) => r.severity === 'high').length,
     medium: recommendations.filter((r) => r.severity === 'medium').length,
-    low: recommendations.filter((r) => r.severity === 'low').length,
+    low: recommendations.filter((r) => r.severity === 'low').length
   };
 
   return {
     totalModels: items.length,
     totalRecommendations: recommendations.length,
     severityCounts,
-    overallHealth: calculateHealth(severityCounts),
+    overallHealth: calculateHealth(severityCounts)
   };
 }
 
@@ -236,32 +239,32 @@ function calculateHealth(severityCounts) {
  * @param {Object} analysis - 分析結果
  */
 function displayAnalysis(analysis) {
-  console.log('📊 Schema Analysis Results\n');
-  console.log(`ORM: ${analysis.orm}`);
-  console.log(`Models/Entities: ${analysis.summary.totalModels}`);
-  console.log(`Overall Health: ${analysis.summary.overallHealth.toUpperCase()}\n`);
+  logger.info('📊 Schema Analysis Results\n');
+  logger.info(`ORM: ${analysis.orm}`);
+  logger.info(`Models/Entities: ${analysis.summary.totalModels}`);
+  logger.info(`Overall Health: ${analysis.summary.overallHealth.toUpperCase()}\n`);
 
   if (analysis.recommendations.length === 0) {
-    console.log('✅ No issues found! Schema is well-structured.\n');
+    logger.info('✅ No issues found! Schema is well-structured.\n');
     return;
   }
 
-  console.log(`Recommendations (${analysis.recommendations.length}):\n`);
+  logger.info(`Recommendations (${analysis.recommendations.length}):\n`);
 
   // 深刻度別にグループ化
   const grouped = {
     high: analysis.recommendations.filter((r) => r.severity === 'high'),
     medium: analysis.recommendations.filter((r) => r.severity === 'medium'),
-    low: analysis.recommendations.filter((r) => r.severity === 'low'),
+    low: analysis.recommendations.filter((r) => r.severity === 'low')
   };
 
   ['high', 'medium', 'low'].forEach((severity) => {
     if (grouped[severity].length === 0) return;
 
-    console.log(`${severity.toUpperCase()} Priority (${grouped[severity].length}):`);
+    logger.info(`${severity.toUpperCase()} Priority (${grouped[severity].length}):`);
     grouped[severity].forEach((rec, index) => {
-      console.log(`  ${index + 1}. [${rec.model || 'General'}] ${rec.description}`);
-      console.log(`     → ${rec.suggestion}\n`);
+      logger.info(`  ${index + 1}. [${rec.model || 'General'}] ${rec.description}`);
+      logger.info(`     → ${rec.suggestion}\n`);
     });
   });
 }
@@ -273,9 +276,9 @@ async function main() {
   const args = process.argv.slice(2);
 
   if (args.length === 0) {
-    console.log('Usage: node schema-analyzer.js --orm=<prisma|typeorm> --schema=<path>');
-    console.log('\nExample:');
-    console.log('  node schema-analyzer.js --orm=prisma --schema=./prisma/schema.prisma');
+    logger.info('Usage: node schema-analyzer.js --orm=<prisma|typeorm> --schema=<path>');
+    logger.info('\nExample:');
+    logger.info('  node schema-analyzer.js --orm=prisma --schema=./prisma/schema.prisma');
     process.exit(0);
   }
 
@@ -303,9 +306,9 @@ async function main() {
     const outputPath = path.join(outputDir, `schema-analysis-${timestamp}.json`);
     fs.writeFileSync(outputPath, JSON.stringify(analysis, null, 2));
 
-    console.log(`✓ Report saved to: ${outputPath}\n`);
+    logger.info(`✓ Report saved to: ${outputPath}\n`);
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    logger.error('❌ Error:', error.message);
     process.exit(1);
   }
 }

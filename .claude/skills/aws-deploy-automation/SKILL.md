@@ -1,6 +1,7 @@
 ---
 name: aws-deploy-automation
-description: Automate and standardize AWS deployments with Infrastructure as Code
+description:
+  Automate and standardize AWS deployments with Infrastructure as Code
 version: 1.0.0
 author: Claude Code Toolkit
 license: MIT
@@ -21,10 +22,40 @@ requires:
 
 # AWS Deploy Automation Agent Skill
 
+## 実装状況
+
+**ステータス**: ✅ 実装済み（基本機能完成） **実装完了日**: 2026-01-18
+**動作保証**: 基本機能（要AWS認証情報）
+
+**実装済み機能**:
+
+- ✅ デプロイスクリプト（deploy-cdk.js、deploy-cloudformation.js、deploy-terraform.js）
+- ✅ ロールバックスクリプト（rollback-stack.js）
+- ✅ 検証スクリプト（pre-deploy-validation.js）
+- ✅ 環境別設定ファイル（dev/staging/production）
+- ✅ デプロイ戦略設定（deployment-strategy.yaml）
+- ✅ 共通ユーティリティ統合（Logger、ErrorHandler、ProgressBar）
+- ✅ README.md・ドキュメント
+
+**未実装機能**（将来対応予定）:
+
+- 🚧 デプロイ後スモークテスト（post-deploy-smoke-test.js）
+- 🚧 シークレット管理（secret-manager.js）
+- 🚧 CDK/CloudFormation/Terraformテンプレート詳細実装
+- 🚧 統合テスト・E2Eテスト
+
+**動作要件**:
+
+- Node.js >= 16
+- AWS CLI >= 2.0
+- AWS CDK >= 2.0（オプション）
+- Terraform >= 1.0（オプション）
+- IAM権限: デプロイ対象のAWSサービスに応じて設定
+
 ## Purpose
 
-このスキルは、AWSへのデプロイを自動化・標準化し、Infrastructure as Code（IaC）のベストプラクティスを適用します。
-CDK、CloudFormation、Terraformに対応し、環境ごとの設定管理、ロールバック戦略、デプロイ前後の検証を自動化します。
+このスキルは、AWSへのデプロイを自動化・標準化し、Infrastructure as
+Code（IaC）のベストプラクティスを適用します。CDK、CloudFormation、Terraformに対応し、環境ごとの設定管理、ロールバック戦略、デプロイ前後の検証を自動化します。
 
 ## When to Use
 
@@ -78,17 +109,20 @@ configs/
 #### 1.1 IaCツールの選択
 
 **AWS CDK（推奨）**
+
 - TypeScript/Pythonで記述
 - 高レベルの抽象化
 - 型安全性
 - IDE補完サポート
 
 **CloudFormation**
+
 - YAML/JSON
 - AWS純正
 - 既存テンプレートが豊富
 
 **Terraform**
+
 - HCL（HashiCorp Configuration Language）
 - マルチクラウド対応
 - 成熟したエコシステム
@@ -96,6 +130,7 @@ configs/
 #### 1.2 環境設定の定義
 
 **開発環境（dev）**:
+
 ```json
 {
   "environment": "dev",
@@ -122,6 +157,7 @@ configs/
 ```
 
 **本番環境（production）**:
+
 ```json
 {
   "environment": "production",
@@ -159,16 +195,19 @@ configs/
 #### 2.1 構文チェック
 
 **CDK:**
+
 ```bash
 cdk synth --context env=staging
 ```
 
 **CloudFormation:**
+
 ```bash
 aws cloudformation validate-template --template-body file://template.yaml
 ```
 
 **Terraform:**
+
 ```bash
 terraform validate
 terraform plan -out=tfplan
@@ -177,16 +216,19 @@ terraform plan -out=tfplan
 #### 2.2 セキュリティチェック
 
 **IAM権限の検証:**
+
 - 最小権限の原則に従っているか
-- ワイルドカード（*）の過度な使用がないか
+- ワイルドカード（\*）の過度な使用がないか
 - パブリックアクセスが意図的か
 
 **シークレット管理:**
+
 - ハードコードされたシークレットがないか
 - AWS Secrets Manager/Systems Manager Parameter Store使用
 - 環境変数の適切な管理
 
 **ネットワークセキュリティ:**
+
 - セキュリティグループのインバウンドルール
 - 0.0.0.0/0からのアクセスが必要か検証
 - VPC内のプライベートサブネット配置
@@ -217,31 +259,28 @@ cdk diff --context env=production
 #### 3.1 デプロイ戦略の選択
 
 **Blue/Green Deployment（推奨：本番環境）**
+
 ```yaml
 strategy: blue-green
 steps:
-  1. 新環境（Green）を構築
-  2. スモークテストを実行
-  3. トラフィックを段階的に切り替え（10% → 50% → 100%）
-  4. 問題なければ旧環境（Blue）を削除
-  5. 問題あればロールバック
+  1. 新環境（Green）を構築 2. スモークテストを実行 3.
+  トラフィックを段階的に切り替え（10% → 50% → 100%） 4.
+  問題なければ旧環境（Blue）を削除 5. 問題あればロールバック
 ```
 
 **Rolling Update（推奨：ステージング環境）**
+
 ```yaml
 strategy: rolling
 steps:
-  1. インスタンスを1つずつ更新
-  2. ヘルスチェック成功を確認
-  3. 次のインスタンスへ
+  1. インスタンスを1つずつ更新 2. ヘルスチェック成功を確認 3. 次のインスタンスへ
 ```
 
 **All-at-Once（推奨：開発環境のみ）**
+
 ```yaml
 strategy: all-at-once
-steps:
-  1. 全リソースを一度に更新
-  2. 最速だがダウンタイムあり
+steps: 1. 全リソースを一度に更新 2. 最速だがダウンタイムあり
 ```
 
 #### 3.2 CDKデプロイ実行
@@ -332,7 +371,7 @@ async function runSmokeTests(environment) {
       name: 'Authentication',
       test: async () => {
         const response = await fetch(`${baseUrl}/api/auth/verify`, {
-          headers: { 'Authorization': `Bearer ${testToken}` }
+          headers: { Authorization: `Bearer ${testToken}` }
         });
         return response.status === 200;
       }
@@ -357,12 +396,14 @@ async function runSmokeTests(environment) {
 #### 4.2 メトリクス監視
 
 **CloudWatch Alarms:**
+
 - CPU使用率 > 80%
 - メモリ使用率 > 85%
 - エラー率 > 1%
 - レスポンスタイム > 1秒
 
 **ログ確認:**
+
 ```bash
 # CloudWatch Logsからエラーログを検索
 aws logs filter-log-events \
@@ -374,6 +415,7 @@ aws logs filter-log-events \
 #### 4.3 ロールバック判定
 
 **自動ロールバック条件:**
+
 - スモークテストが50%以上失敗
 - エラー率が5%を超える
 - ヘルスチェックが3回連続で失敗
@@ -523,11 +565,13 @@ workflows:
 ## Dependencies
 
 ### Required
+
 - AWS CLI >= 2.0
 - Node.js >= 16
 - 適切なIAM権限
 
 ### Optional
+
 - AWS CDK >= 2.0（CDK使用時）
 - Terraform >= 1.0（Terraform使用時）
 - Docker（コンテナデプロイ時）
