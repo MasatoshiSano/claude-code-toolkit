@@ -1,0 +1,41 @@
+{
+  "name": "@claude-code-toolkit/code-quality-suite",
+  "version": "1.0.0",
+  "description": "Comprehensive code quality, security, and performance analysis suite",
+  "type": "module",
+  "main": "scripts/quality-checker.js",
+  "scripts": {
+    "check": "node scripts/quality-checker.js",
+    "security": "python scripts/security-scanner.py",
+    "report": "node scripts/report-generator.js",
+    "test": "jest"
+  },
+  "keywords": [
+    "code-quality",
+    "security",
+    "performance",
+    "audit",
+    "linting",
+    "testing"
+  ],
+  "author": "Claude Code Toolkit",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "dependencies": {
+    "@claude-code-toolkit/utils": "*",
+    "eslint": "^8.57.0",
+    "eslint-plugin-complexity": "^1.0.0",
+    "jscpd": "^4.0.0",
+    "madge": "^7.0.0",
+    "chalk": "^5.3.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "@types/node": "^20.11.0"
+  },
+  "optionalDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

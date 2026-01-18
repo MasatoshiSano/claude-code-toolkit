@@ -1,0 +1,20 @@
+{
+  "environment": "production",
+  "region": "us-east-1",
+  "account": "${AWS_ACCOUNT_ID}",
+  "tags": {
+    "Environment": "production",
+    "Project": "claude-code-toolkit",
+    "CostCenter": "production"
+  },
+  "parameters": {
+    "InstanceType": "t3.medium",
+    "MinSize": "3",
+    "MaxSize": "10",
+    "DesiredCapacity": "3"
+  },
+  "context": {
+    "vpcCidr": "10.2.0.0/16",
+    "availabilityZones": "3"
+  }
+}

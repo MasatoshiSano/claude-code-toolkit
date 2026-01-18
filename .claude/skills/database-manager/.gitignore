@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+
+# Build outputs
+dist/
+build/
+
+# Environment files (DB credentials)
+.env
+.env.local
+
+# Test coverage
+coverage/
+
+# Database backups
+backups/
+*.sql
+*.dump
+*.backup
+
+# Migration temporary files
+migrations/temp/
+*.migration.tmp
+
+# Reports
+reports/
+schema-analysis-*.json
+index-optimization-*.json
+query-analysis-*.json
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+.tmp/
+temp/

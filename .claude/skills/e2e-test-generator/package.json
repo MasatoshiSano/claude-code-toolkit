@@ -1,0 +1,38 @@
+{
+  "name": "@claude-code-toolkit/e2e-test-generator",
+  "version": "1.0.0",
+  "description": "E2E test generation from user flows with Playwright/Cypress",
+  "main": "scripts/index.js",
+  "type": "module",
+  "scripts": {
+    "test": "jest",
+    "generate": "node scripts/test-generator.js",
+    "generate:page-objects": "node scripts/page-object-generator.js"
+  },
+  "keywords": [
+    "e2e",
+    "testing",
+    "playwright",
+    "cypress",
+    "automation"
+  ],
+  "author": "Claude Code Toolkit",
+  "license": "MIT",
+  "dependencies": {
+    "@playwright/test": "^1.42.0",
+    "cypress": "^13.6.0",
+    "@claude-code-toolkit/utils": "^1.0.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "homepage": "https://github.com/claude-code-toolkit/claude-code-toolkit#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/claude-code-toolkit/claude-code-toolkit.git",
+    "directory": ".claude/skills/e2e-test-generator"
+  },
+  "bugs": {
+    "url": "https://github.com/claude-code-toolkit/claude-code-toolkit/issues"
+  }
+}

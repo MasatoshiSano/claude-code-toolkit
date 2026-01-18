@@ -1,0 +1,203 @@
+{
+  "version": "1.0.0",
+  "description": "Performance thresholds for serverless optimization",
+  "lambda": {
+    "duration": {
+      "excellent": {
+        "maxMs": 100,
+        "description": "Excellent performance, no optimization needed"
+      },
+      "good": {
+        "maxMs": 500,
+        "description": "Good performance, minor optimization possible"
+      },
+      "acceptable": {
+        "maxMs": 3000,
+        "description": "Acceptable performance, optimization recommended"
+      },
+      "poor": {
+        "maxMs": 10000,
+        "description": "Poor performance, optimization required"
+      }
+    },
+    "coldStart": {
+      "excellent": {
+        "maxMs": 200,
+        "description": "Minimal cold start impact"
+      },
+      "good": {
+        "maxMs": 500,
+        "description": "Low cold start impact"
+      },
+      "acceptable": {
+        "maxMs": 1500,
+        "description": "Moderate cold start impact"
+      },
+      "poor": {
+        "maxMs": 3000,
+        "description": "High cold start impact, optimization required"
+      }
+    },
+    "memoryUtilization": {
+      "optimal": {
+        "minPercentage": 60,
+        "maxPercentage": 80,
+        "description": "Optimal memory utilization"
+      },
+      "overProvisioned": {
+        "maxPercentage": 50,
+        "description": "Memory is over-provisioned"
+      },
+      "underProvisioned": {
+        "minPercentage": 85,
+        "description": "Memory is under-provisioned"
+      }
+    },
+    "concurrency": {
+      "throttlingThreshold": 1,
+      "description": "Throttled invocations per 100 requests that trigger scaling recommendation"
+    },
+    "errors": {
+      "warningRate": 1,
+      "criticalRate": 5,
+      "description": "Error rate percentage thresholds"
+    }
+  },
+  "apiGateway": {
+    "latency": {
+      "excellent": {
+        "maxMs": 50,
+        "description": "Excellent API latency"
+      },
+      "good": {
+        "maxMs": 200,
+        "description": "Good API latency"
+      },
+      "acceptable": {
+        "maxMs": 1000,
+        "description": "Acceptable API latency"
+      },
+      "poor": {
+        "maxMs": 3000,
+        "description": "Poor API latency, optimization required"
+      }
+    },
+    "cacheHitRate": {
+      "excellent": {
+        "minPercentage": 80,
+        "description": "Excellent cache hit rate"
+      },
+      "good": {
+        "minPercentage": 60,
+        "description": "Good cache hit rate"
+      },
+      "poor": {
+        "maxPercentage": 40,
+        "description": "Poor cache hit rate, review caching strategy"
+      }
+    },
+    "errorRate": {
+      "warningPercentage": 1,
+      "criticalPercentage": 5,
+      "description": "4xx/5xx error rate thresholds"
+    }
+  },
+  "dynamodb": {
+    "readLatency": {
+      "excellent": {
+        "maxMs": 10,
+        "description": "Excellent read latency"
+      },
+      "good": {
+        "maxMs": 50,
+        "description": "Good read latency"
+      },
+      "acceptable": {
+        "maxMs": 100,
+        "description": "Acceptable read latency"
+      },
+      "poor": {
+        "maxMs": 200,
+        "description": "Poor read latency, optimization required"
+      }
+    },
+    "writeLatency": {
+      "excellent": {
+        "maxMs": 20,
+        "description": "Excellent write latency"
+      },
+      "good": {
+        "maxMs": 100,
+        "description": "Good write latency"
+      },
+      "acceptable": {
+        "maxMs": 200,
+        "description": "Acceptable write latency"
+      },
+      "poor": {
+        "maxMs": 500,
+        "description": "Poor write latency, optimization required"
+      }
+    },
+    "throttling": {
+      "warningPercentage": 1,
+      "criticalPercentage": 5,
+      "description": "Throttled request percentage thresholds"
+    },
+    "capacityUtilization": {
+      "optimal": {
+        "minPercentage": 60,
+        "maxPercentage": 80,
+        "description": "Optimal capacity utilization for provisioned mode"
+      },
+      "overProvisioned": {
+        "maxPercentage": 40,
+        "description": "Capacity is over-provisioned, consider On-Demand"
+      },
+      "underProvisioned": {
+        "minPercentage": 90,
+        "description": "Capacity is under-provisioned, increase or enable auto-scaling"
+      }
+    }
+  },
+  "stepFunctions": {
+    "executionDuration": {
+      "expressWorkflowMax": 300000,
+      "description": "Maximum duration (ms) for Express Workflows (5 minutes)"
+    },
+    "stateTransitions": {
+      "expressWorkflowMax": 8000,
+      "description": "Maximum state transitions for Express Workflows"
+    }
+  },
+  "cost": {
+    "lambda": {
+      "costPerMillionInvocations": {
+        "low": 10,
+        "medium": 50,
+        "high": 100,
+        "description": "Cost benchmarks per million invocations (USD)"
+      }
+    },
+    "dynamodb": {
+      "costPerGBMonth": {
+        "onDemand": 1.25,
+        "provisioned": 0.25,
+        "description": "Storage cost benchmarks (USD)"
+      }
+    }
+  },
+  "recommendations": {
+    "autoApply": {
+      "enabled": false,
+      "description": "Automatically apply optimizations (requires approval)"
+    },
+    "minimumSavings": {
+      "percentage": 10,
+      "absoluteDollars": 10,
+      "description": "Minimum savings to trigger recommendation"
+    },
+    "reviewPeriodDays": 14,
+    "description": "Minimum period for performance data collection before optimization"
+  }
+}

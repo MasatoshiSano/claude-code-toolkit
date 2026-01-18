@@ -1,0 +1,112 @@
+{
+  "version": "1.0.0",
+  "description": "Threshold settings for cost optimization analysis",
+  "thresholds": {
+    "stoppedInstances": {
+      "warningDays": 7,
+      "criticalDays": 30,
+      "description": "Days before recommending action on stopped EC2 instances"
+    },
+    "unattachedVolumes": {
+      "warningDays": 7,
+      "criticalDays": 30,
+      "description": "Days before recommending deletion of unattached EBS volumes"
+    },
+    "unusedSnapshots": {
+      "warningDays": 90,
+      "criticalDays": 180,
+      "keepMinimum": 7,
+      "description": "Age threshold for old RDS/EBS snapshots"
+    },
+    "cpuUtilization": {
+      "overProvisionedMax": 15,
+      "underProvisionedMin": 80,
+      "optimalRange": [30, 70],
+      "description": "CPU utilization percentage thresholds"
+    },
+    "memoryUtilization": {
+      "overProvisionedMax": 30,
+      "underProvisionedMin": 85,
+      "optimalRange": [40, 75],
+      "description": "Memory utilization percentage thresholds"
+    },
+    "networkUtilization": {
+      "idleThresholdMbps": 1,
+      "lowThresholdMbps": 10,
+      "description": "Network traffic thresholds for identifying idle resources"
+    },
+    "costAnomalies": {
+      "percentageIncrease": 25,
+      "absoluteIncreaseDollars": 500,
+      "description": "Thresholds for detecting cost anomalies"
+    },
+    "reservedInstanceUtilization": {
+      "warningPercentage": 75,
+      "criticalPercentage": 60,
+      "description": "RI utilization below this triggers a warning"
+    },
+    "savingsPlansCoverage": {
+      "targetPercentage": 75,
+      "warningPercentage": 50,
+      "description": "Target Savings Plans coverage"
+    },
+    "tagCompliance": {
+      "warningPercentage": 80,
+      "criticalPercentage": 60,
+      "description": "Percentage of resources with required tags"
+    },
+    "budgetAlerts": {
+      "warningPercentage": 80,
+      "criticalPercentage": 90,
+      "emergencyPercentage": 100,
+      "description": "Budget consumption thresholds for alerts"
+    },
+    "dataTransfer": {
+      "unusedNATGatewayGB": 100,
+      "idleLoadBalancerGB": 10,
+      "description": "Data transfer thresholds (GB/month)"
+    },
+    "databaseConnections": {
+      "idlePercentage": 10,
+      "underutilizedPercentage": 30,
+      "description": "RDS connection utilization thresholds"
+    },
+    "iops": {
+      "provisionedUtilizationPercentage": 20,
+      "description": "IOPS utilization threshold for EBS/RDS"
+    },
+    "rightSizing": {
+      "savingsMinimumPercentage": 10,
+      "savingsMinimumDollars": 20,
+      "description": "Minimum savings to recommend right-sizing"
+    }
+  },
+  "severity": {
+    "info": {
+      "savingsRange": [0, 100],
+      "description": "Low impact findings"
+    },
+    "warning": {
+      "savingsRange": [100, 500],
+      "description": "Medium impact findings requiring attention"
+    },
+    "critical": {
+      "savingsRange": [500, Infinity],
+      "description": "High impact findings requiring immediate action"
+    }
+  },
+  "analysisWindow": {
+    "costTrend": {
+      "days": 30,
+      "description": "Period for cost trend analysis"
+    },
+    "utilizationMetrics": {
+      "days": 14,
+      "description": "Period for CPU/Memory utilization analysis"
+    },
+    "riRecommendations": {
+      "days": 60,
+      "description": "Period for RI/Savings Plans recommendations"
+    }
+  }
+}

@@ -18,9 +18,15 @@ description: Create detailed design specification based on requirements (Stage 2
 
 Read and understand the requirements document thoroughly
 
-### 3. Create Design Document
+### 3. Check for existing design document
 
-Create `.tmp/design.md` with the following sections:
+Check if `.tmp/design.md` already exists:
+- If exists: Read the existing document and prepare to merge with architectural updates
+- If not exists: Create new document from scratch
+
+### 4. Create or Update Design Document
+
+**If creating new document (`.tmp/design.md` doesn't exist):**
 
 ````markdown
 # 詳細設計書 - [タスク名]
@@ -140,12 +146,39 @@ Create `.tmp/design.md` with the following sections:
 - [注意点1]
 - [注意点2]
 
+## 改訂履歴
+- YYYY-MM-DD: 初版作成 - [タスク名]
 ```
 
-### 4. Update TODO
+**If updating existing document:**
+
+- Read the existing design.md
+- Update "1.1 システム構成図" to reflect new components
+- Add new components to "2.1 コンポーネント一覧" table with current date in a new column "追加日"
+- Add detailed design for new components under "2.2 各コンポーネントの詳細" with format:
+  ```markdown
+  #### [Component Name]（追加: YYYY-MM-DD）
+  - **目的**: ...
+  - **公開インターフェース**: ...
+  - **内部実装方針**: ...
+  - **依存コンポーネント**: [list existing and new dependencies]
+  ```
+- Update "3. データフロー" if new components affect data flow
+- Update "4. APIインターフェース" with new API definitions
+- Verify and update component dependencies in "2.1 コンポーネント一覧"
+- Add entry to "改訂履歴" section with current date
+- Preserve all existing content unless new requirements conflict
+
+**Important for updates:**
+- Identify which existing components are affected by the new feature
+- Update dependency relationships in component table
+- Ensure system architecture diagram reflects all changes
+- Highlight integration points between new and existing components
+
+### 5. Update TODO
 Use TodoWrite to add "詳細設計の完了とレビュー" as a task
 
-### 5. Present to user
+### 6. Present to user
 Show the created design document and ask for:
 - Technical feedback
 - Architecture approval

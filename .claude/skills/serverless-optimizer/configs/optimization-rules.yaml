@@ -1,0 +1,120 @@
+version: "1.0.0"
+description: "Optimization rules for serverless architecture"
+
+lambda:
+  memory:
+    # メモリ使用率がこの値を下回る場合、メモリを削減
+    overProvisionedThreshold: 50
+    # メモリ使用率がこの値を上回る場合、メモリを増加
+    underProvisionedThreshold: 85
+    # 推奨するバッファ（実際の使用量の何%追加するか）
+    recommendedBuffer: 20
+    # 最小メモリサイズ（MB）
+    minimumMemoryMB: 128
+    # 最大メモリサイズ（MB）
+    maximumMemoryMB: 3008
+
+  timeout:
+    # タイムアウトが実行時間の何倍以上ある場合に削減を推奨
+    overProvisionedMultiplier: 3
+    # 推奨するバッファ（実際の実行時間の何%追加するか）
+    recommendedBuffer: 50
+    # 最小タイムアウト（秒）
+    minimumTimeoutSeconds: 3
+    # 最大タイムアウト（秒）
+    maximumTimeoutSeconds: 900
+
+  coldStart:
+    # コールドスタートがこの値（ms）を上回る場合に対策を推奨
+    highImpactThresholdMs: 1500
+    # コールドスタート頻度がこの値を上回る場合に対策を推奨
+    highFrequencyPercentage: 20
+
+    recommendations:
+      provisionedConcurrency:
+        enabled: true
+        # コールドスタートがこの値を上回る場合に推奨
+        thresholdMs: 1000
+        # 推奨する最小インスタンス数
+        minimumInstances: 1
+
+      memoryIncrease:
+        enabled: true
+        # 現在のメモリがこの値未満の場合に推奨
+        thresholdMB: 1024
+        # 推奨するメモリサイズ（MB）
+        recommendedMemoryMB: 1024
+
+      layers:
+        enabled: true
+        # パッケージサイズがこの値（MB）を上回る場合に推奨
+        packageSizeThresholdMB: 10
+
+  cost:
+    # 月間コストがこの値を上回る関数を優先的に最適化
+    highCostThresholdUSD: 100
+    # 削減率がこの値未満の場合は最適化を推奨しない
+    minimumSavingsPercentage: 10
+    # 最小削減額（USD）
+    minimumSavingsDollars: 10
+
+apiGateway:
+  caching:
+    # リクエスト数がこの値を上回る場合にキャッシングを推奨
+    requestsPerMonthThreshold: 1000000
+    # 推奨するキャッシュサイズ
+    recommendedCacheSize: "0.5GB"
+    # キャッシュTTL（秒）
+    defaultTtlSeconds: 300
+
+  throttling:
+    # 推奨するレート制限（リクエスト/秒）
+    recommendedRateLimit: 1000
+    # 推奨するバーストリミット
+    recommendedBurstLimit: 2000
+
+dynamodb:
+  capacity:
+    # 使用率がこの値を下回る場合にOn-Demandへの移行を推奨
+    lowUtilizationThreshold: 20
+    # 使用率がこの値を上回る場合にProvisionedへの移行を推奨
+    highUtilizationThreshold: 80
+    # 推奨する自動スケーリング設定
+    autoScaling:
+      minCapacity: 5
+      maxCapacity: 100
+      targetUtilization: 70
+
+  storage:
+    # ストレージサイズがこの値（GB）を上回る場合に最適化を推奨
+    largeTableThresholdGB: 100
+    # TTL設定を推奨
+    recommendTtl: true
+
+stepFunctions:
+  # Express Workflowsへの移行を推奨する条件
+  expressWorkflow:
+    # 実行時間がこの値（秒）未満の場合に推奨
+    maxDurationSeconds: 300
+    # 月間実行数がこの値を上回る場合に推奨
+    minExecutionsPerMonth: 100000
+
+notifications:
+  # 月間削減額がこの値を上回る場合に通知
+  savingsThresholdUSD: 100
+  # 最適化の優先度（high/medium/low）
+  priorityLevels:
+    high: 500  # $500以上の削減
+    medium: 100  # $100以上の削減
+    low: 10  # $10以上の削減
+
+exclusions:
+  # 最適化から除外する関数のパターン（正規表現）
+  functionNamePatterns:
+    - "^production-critical-.*"
+    - ".*-do-not-modify$"
+
+  # 最適化から除外するタグ
+  tags:
+    OptimizationExcluded: "true"
+    Critical: "high"

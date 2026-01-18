@@ -1,0 +1,72 @@
+{
+  "version": "1.0.0",
+  "rules": {
+    "ec2": {
+      "stoppedInstancesTerminateAfterDays": 30,
+      "lowUtilizationThreshold": {
+        "cpu": 15,
+        "memory": 30
+      },
+      "recommendRightSizing": true,
+      "excludeInstanceTypes": []
+    },
+    "ebs": {
+      "unattachedVolumeDeleteAfterDays": 30,
+      "snapshotBeforeDelete": true,
+      "deleteOldSnapshotsAfterDays": 90,
+      "keepMinimumSnapshots": 7
+    },
+    "elasticIP": {
+      "releaseUnallocatedIPs": true,
+      "excludeAllocationIds": []
+    },
+    "rds": {
+      "stoppedInstancesDeleteAfterDays": 60,
+      "lowUtilizationThreshold": {
+        "cpu": 20,
+        "connections": 30
+      },
+      "recommendAuroraServerless": true
+    },
+    "loadBalancer": {
+      "deleteIdleLoadBalancersAfterDays": 14,
+      "zeroConnectionsThreshold": 7
+    },
+    "natGateway": {
+      "lowDataTransferThresholdGB": 100,
+      "recommendReplacement": true
+    },
+    "s3": {
+      "recommendLifecyclePolicies": true,
+      "intelligentTieringEnabled": true
+    },
+    "commitments": {
+      "recommendReservedInstances": true,
+      "recommendSavingsPlans": true,
+      "minimumUsageHoursPerMonth": 500,
+      "preferredTermLength": "3-year"
+    },
+    "tagging": {
+      "requiredTags": ["Environment", "Team", "Project"],
+      "autoTagging": false
+    },
+    "budgets": {
+      "enableBudgetAlerts": true,
+      "alertThresholds": [80, 90, 100],
+      "monthlyBudgetLimit": 15000
+    }
+  },
+  "exclusions": {
+    "instanceIds": [],
+    "volumeIds": [],
+    "tags": {
+      "DoNotDelete": "true",
+      "Critical": "true"
+    }
+  },
+  "notifications": {
+    "emailEnabled": false,
+    "slackWebhookUrl": "",
+    "notifyOnSavingsGreaterThan": 1000
+  }
+}
