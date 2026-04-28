@@ -9,6 +9,8 @@ Claude Code用の高度なAgent Skillsコレクション - 開発ワークフロ
 
 Claude Code Toolkitは、[Anthropic Agent Skills標準（2025年12月発表）](https://docs.anthropic.com)に準拠した、プロフェッショナル向けAgent Skillsの統合パッケージです。5つの主要スキルと共通ユーティリティを提供し、AWS開発、AI最適化、API設計、E2Eテスト、パフォーマンス監査を自動化します。
 
+加えて、**WSL2 + Docker Engine（Docker Desktop不使用） + Playwright MCP** によるClaude Code連携開発環境の構築ガイド（実装完了・検証済み）も同梱しています。詳細は [📦 WSL開発環境構築ガイド](#-wsl開発環境構築ガイド検証済み) を参照してください。
+
 ## ✨ 実装済みAgent Skills
 
 ### 1. 🚀 aws-deploy-automation
@@ -60,6 +62,25 @@ Claude Code Toolkitは、[Anthropic Agent Skills標準（2025年12月発表）](
 - パフォーマンス予算管理
 
 📦 **場所**: `.claude/skills/frontend-performance-auditor/`
+
+## 📦 WSL開発環境構築ガイド（検証済み）
+
+Windows上でClaude Code + Playwright MCPを使ったWeb開発環境を構築するための、実装完了・動作検証済みの手順書を同梱しています。
+
+**構成**: Windows 10/11 → WSL2 → Ubuntu 24.04 LTS → Docker Engine（Desktop不使用） + Playwright MCP
+
+**主な特徴**:
+
+- 🐳 **Docker Desktop不要**: WSL2内にDocker Engineを直接インストール（systemd管理）
+- 🎭 **Playwright MCP統合**: Claude Codeから直接ブラウザ操作（スクショ・スクレイピング）
+- ✅ **実体験ベースのハマりポイント記載**: `--executable-path`必須、`-s user`スコープ、wsl.conf書式エラー対処など
+- 📋 **仕様駆動開発スタイル**: 要件 → 設計 → タスクの3点セット（合計約950行）
+
+| ドキュメント | 内容 |
+|---|---|
+| [`docs/wsl-setup/requirements.md`](docs/wsl-setup/requirements.md) | 要件定義（決定事項・成功基準・実装時の重要な知見） |
+| [`docs/wsl-setup/design.md`](docs/wsl-setup/design.md) | 詳細設計（システム構成図・技術スタック・エラーハンドリング） |
+| [`docs/wsl-setup/tasks.md`](docs/wsl-setup/tasks.md) | タスクリスト（4フェーズ14タスクの実行可能な手順書） |
 
 ## 🛠️ 共通ユーティリティ
 
@@ -147,10 +168,8 @@ node scripts/lighthouse-runner.js https://example.com
 - [e2e-test-generator/README.md](.claude/skills/e2e-test-generator/README.md)
 - [frontend-performance-auditor/README.md](.claude/skills/frontend-performance-auditor/README.md)
 
-WSL Docker Compose + Playwright MCP 開発環境構築ガイド（実装完了・検証済み）：
-- [要件定義](docs/wsl-setup/requirements.md)
-- [詳細設計](docs/wsl-setup/design.md)
-- [タスク分解（手順書）](docs/wsl-setup/tasks.md)
+WSL開発環境構築ガイド（[専用セクション参照](#-wsl開発環境構築ガイド検証済み)）:
+- [要件定義](docs/wsl-setup/requirements.md) / [詳細設計](docs/wsl-setup/design.md) / [タスク分解（手順書）](docs/wsl-setup/tasks.md)
 
 ## 🏗️ プロジェクト構造
 
@@ -163,6 +182,11 @@ claude-code-toolkit/
 │   ├── api-contract-validator/             # APIコントラクト検証
 │   ├── e2e-test-generator/                 # E2Eテスト生成
 │   └── frontend-performance-auditor/       # パフォーマンス監査
+├── docs/
+│   └── wsl-setup/                          # WSL+Docker+Playwright MCP環境構築ガイド
+│       ├── requirements.md
+│       ├── design.md
+│       └── tasks.md
 ├── CLAUDE.md                               # Claude Code プロジェクト設定
 ├── package.json                            # npm workspaces設定
 └── README.md                               # このファイル
