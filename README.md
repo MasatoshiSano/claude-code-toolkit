@@ -147,10 +147,10 @@ node scripts/lighthouse-runner.js https://example.com
 - [e2e-test-generator/README.md](.claude/skills/e2e-test-generator/README.md)
 - [frontend-performance-auditor/README.md](.claude/skills/frontend-performance-auditor/README.md)
 
-詳細な設計ドキュメント：
-- [要件定義](.tmp/requirements.md)
-- [詳細設計](.tmp/design.md)
-- [タスク分解](.tmp/tasks.md)
+WSL Docker Compose + Playwright MCP 開発環境構築ガイド（実装完了・検証済み）：
+- [要件定義](docs/wsl-setup/requirements.md)
+- [詳細設計](docs/wsl-setup/design.md)
+- [タスク分解（手順書）](docs/wsl-setup/tasks.md)
 
 ## 🏗️ プロジェクト構造
 
