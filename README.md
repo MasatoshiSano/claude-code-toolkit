@@ -1,10 +1,66 @@
-# WSL Docker + Playwright MCP 開発環境構築ガイド
+# Claude Code Toolkit
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Windows上で **WSL2 + Ubuntu 24.04 LTS + Docker Engine（Docker Desktop不使用） + Playwright MCP + Claude Code CLI** を統合した、Webアプリ開発環境を構築するための実装完了・動作検証済み手順書です。
+Claude Code 用の **スキル** と **環境構築ガイド** をまとめたツールキット。
 
-## 構成図
+## 収録物
+
+| 種類 | 名前 | 概要 |
+|---|---|---|
+| 🛠 スキル | [`skills/html2pptx-design`](skills/html2pptx-design/) | HTML+CSS で 1 回設計するだけで「画像版（ピクセルパーフェクト）」と「テキスト編集可能版」の PowerPoint を同時生成 |
+| 📚 ガイド | [`docs/wsl-setup`](docs/wsl-setup/) | WSL2 + Docker Engine + Playwright MCP + Claude Code CLI の開発環境構築手順（実装完了・動作検証済み） |
+
+---
+
+# スキル
+
+## html2pptx-design — HTML → PPTX デザインスライド作成
+
+HTMLとCSSでスライドを 1 回設計すると、Playwright 経由で **2 種類の PPTX を同時に生成** する Claude Code スキル。
+
+- **画像版** `<output>.pptx` — 各スライドを 1920×1080 でスクリーンショットしてフルスライド埋め込み。ピクセルパーフェクトだがテキスト編集不可。
+- **テキスト編集可能版** `<output>-editable.pptx` — DOM を走査し `getComputedStyle` から位置・色・フォントを取得して、本物のテキストボックス＋角丸長方形/楕円として再構成。PowerPoint 上で文字を直接編集できる。
+
+### インストール
+
+```bash
+# ユーザーレベル（全プロジェクトで使う）
+mkdir -p ~/.claude/skills
+cp -r skills/html2pptx-design ~/.claude/skills/
+
+# またはプロジェクトローカル
+mkdir -p .claude/skills
+cp -r skills/html2pptx-design .claude/skills/
+```
+
+依存: `pip install playwright python-pptx && python -m playwright install chromium`
+
+### 使い方
+
+Claude Code に「デザインの良いスライドを作って」「編集できるプレゼンを作って」等と頼むとスキルが起動する。手動で実行する場合:
+
+```bash
+python ~/.claude/skills/html2pptx-design/scripts/render_slides.py ./slides.html ./deck.pptx
+# -> ./deck.pptx           (画像版)
+# -> ./deck-editable.pptx  (テキスト編集可能版)
+
+# 片方だけ:
+python ... ./slides.html ./deck.pptx --no-editable     # 画像版のみ
+python ... ./slides.html ./deck.pptx --only-editable   # 編集可能版のみ
+```
+
+詳細は [`skills/html2pptx-design/SKILL.md`](skills/html2pptx-design/SKILL.md) と [`references/css-patterns.md`](skills/html2pptx-design/references/css-patterns.md) を参照。
+
+---
+
+# ガイド
+
+## WSL Docker + Playwright MCP 開発環境構築ガイド
+
+Windows上で **WSL2 + Ubuntu 24.04 LTS + Docker Engine（Docker Desktop不使用） + Playwright MCP + Claude Code CLI** を統合した、Webアプリ開発環境を構築するための実装完了・動作検証済み手順書。
+
+### 構成図
 
 ```
 Windows 10/11
@@ -17,7 +73,7 @@ Windows 10/11
                     └─ Chromium（--executable-path で明示指定）
 ```
 
-## 主な特徴
+### 主な特徴
 
 - 🐳 **Docker Desktop不要**: WSL2内にDocker Engineを直接インストール（systemd管理）
 - 🎭 **Playwright MCP統合**: Claude Codeから直接ブラウザ操作（スクショ・スクレイピング）
@@ -28,7 +84,7 @@ Windows 10/11
 - 📋 **仕様駆動開発スタイル**: 要件 → 設計 → タスクの3点セット
 - 🧪 **検証済み**: Claude Code → Playwright MCP 経由で `localhost:8080` の nginx ページのスクリーンショット取得まで成功
 
-## ドキュメント
+### ドキュメント
 
 | ファイル | 内容 | 行数 |
 |---|---|---|
@@ -36,9 +92,9 @@ Windows 10/11
 | [`docs/wsl-setup/design.md`](docs/wsl-setup/design.md) | 詳細設計（システム構成図・技術スタック・エラーハンドリング） | 438 |
 | [`docs/wsl-setup/tasks.md`](docs/wsl-setup/tasks.md) | タスクリスト（4フェーズ14タスクの実行可能な手順書） | 323 |
 
-## クイックリファレンス
+### クイックリファレンス
 
-### 1. WSL2 + Ubuntu 24.04 セットアップ
+#### 1. WSL2 + Ubuntu 24.04 セットアップ
 
 ```powershell
 # Windows側（管理者PowerShell）
@@ -59,7 +115,7 @@ EOF'
 
 Windows側で `wsl --shutdown` 後、再接続。
 
-### 2. Docker Engine インストール（公式リポジトリから）
+#### 2. Docker Engine インストール（公式リポジトリから）
 
 ```bash
 sudo apt update && \
@@ -76,7 +132,7 @@ sudo systemctl enable --now docker
 
 WSLを再起動（`exit` → `wsl --shutdown` → 再接続）後、`docker run hello-world` を確認。
 
-### 3. Node.js + Claude Code CLI + Playwright
+#### 3. Node.js + Claude Code CLI + Playwright
 
 ```bash
 curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
@@ -86,7 +142,7 @@ sudo npx playwright install-deps chromium
 npx playwright install chromium
 ```
 
-### 4. Playwright MCP 設定（最重要）
+#### 4. Playwright MCP 設定（最重要）
 
 ```bash
 claude mcp remove -s user playwright 2>/dev/null
@@ -98,7 +154,7 @@ claude mcp list
 # → playwright: ... - ✓ Connected と表示されればOK
 ```
 
-### 5. 動作確認
+#### 5. 動作確認
 
 ```bash
 mkdir -p ~/projects/sample-app && cd ~/projects/sample-app
@@ -115,7 +171,7 @@ claude
 # Claude Code内で: Open a browser and navigate to http://localhost:8080, then take a screenshot
 ```
 
-## トラブルシューティング
+### トラブルシューティング
 
 | 問題 | 原因 | 解決方法 |
 |---|---|---|
@@ -129,7 +185,7 @@ claude
 
 詳細は [`docs/wsl-setup/tasks.md`](docs/wsl-setup/tasks.md) を参照してください。
 
-## 動作確認済み環境
+### 動作確認済み環境
 
 - WSL: 2.5.9.0
 - Ubuntu: 24.04 LTS
@@ -137,6 +193,8 @@ claude
 - Node.js: 22.x LTS
 - Playwright: 1.57.0
 - Chromium実体パス例: `~/.cache/ms-playwright/chromium-1200/chrome-linux64/chrome`
+
+---
 
 ## ライセンス
 
